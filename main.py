@@ -1,5 +1,7 @@
+import interface
+
 def main():
-    return True
+    interface.UserInterface.menu()
 
 if __name__ == '__main__':
     main()

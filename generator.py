@@ -32,3 +32,7 @@ class Generator(Structures):
     def __init__(self, length, difficulty):
         self.__length = length
         self.__difficulty = difficulty
+
+    @classmethod
+    def generate(cls):
+        pass
