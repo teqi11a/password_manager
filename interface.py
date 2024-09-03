@@ -11,7 +11,6 @@ class CodeExceptions:
                     st = input("Введите корректное число")
 
 
-
 class Choices:
 
     _min_length = 6
@@ -82,6 +81,7 @@ class UserInterface:
             print(f"{key} --> {value}")
         print(f"{cls.borders()}")
         cls.__user_choice = int(input())
+
         match cls.__user_choice:
             case 1:
                 print(Choices.generate_passw_interface())
@@ -96,7 +96,3 @@ class UserInterface:
     @classmethod
     def borders(cls):
         return cls().border * 25
-
-
-while True:
-    UserInterface.menu()
