@@ -4,11 +4,13 @@ class CodeExceptions:
 
     @staticmethod
     def validate_number(st: str) -> int:
-        try:
-            return int(st)
-        except:
-            print("Вы ввели неверное число")
-            UserInterface.menu()
+            while True:
+                if int(st):
+                    return int(st)
+                else:
+                    st = input("Введите корректное число")
+
+
 
 class Choices:
 
@@ -22,17 +24,13 @@ class Choices:
     }
     @classmethod
     def generate_passw_interface(cls):
-        cls.__user_length = CodeExceptions.validate_number(input(f"{UserInterface.borders()}\n"
-                                                                 f"Введите длину пароля: \n"
-                                                                 f"{UserInterface.borders()}\n"))
+        cls.__user_length = int(input(f"{UserInterface.borders()}\nВведите длину пароля: (6 - 16)\n{UserInterface.borders()}\n"))
 
         if cls.__user_length < cls._min_length or cls.__user_length > cls._max_length:
             print("Вы ввели неверную длину пароля\n")
             return UserInterface.menu()
 
-        cls.__user_difficulty = CodeExceptions.validate_number(input(f"{UserInterface.borders()}\n"
-                                                                     f"Введите сложность пароля: \n"
-                                                                     f"{UserInterface.borders()}\n"))
+        cls.__user_difficulty = int(input(f"{UserInterface.borders()}\nВведите сложность пароля: (1 - 3)\n{UserInterface.borders()}\n"))
         if cls.__user_difficulty < 1 or cls.__user_difficulty > 3:
             print("Вы ввели неверную опцию сложности пароля\n")
             return UserInterface.menu()
@@ -44,15 +42,16 @@ class Choices:
     def change_borders_interface(cls):
         for key, value in cls.__interface_borders.items():
             print(f"{key} --> {value}")
-        cls.__user_choice = CodeExceptions.validate_number(input())
+        cls.__user_choice = int(input())
         match cls.__user_choice:
             case 1:
-                UserInterface.border = cls.__interface_borders[1]
+                UserInterface.border = cls.__interface_borders[cls.__user_choice]
             case 2:
-                UserInterface.border = cls.__interface_borders[2]
+                UserInterface.border = cls.__interface_borders[cls.__user_choice]
             case 3:
-                UserInterface.border = cls.__interface_borders[3]
-        return f"Новый интерфейс границ теперь --> {cls.__interface_borders[cls.__user_choice]}"
+                UserInterface.border = cls.__interface_borders[cls.__user_choice]
+        return f"Вы выбрали --> {cls.__interface_borders[cls.__user_choice]}"
+
 
 class UserInterface:
 
@@ -82,7 +81,7 @@ class UserInterface:
         for key, value in cls.__interface_list.items():
             print(f"{key} --> {value}")
         print(f"{cls.borders()}")
-        cls.__user_choice = CodeExceptions.validate_number(input())
+        cls.__user_choice = int(input())
         match cls.__user_choice:
             case 1:
                 print(Choices.generate_passw_interface())
@@ -94,10 +93,9 @@ class UserInterface:
                 print("До свидания!")
                 exit()
 
-
     @classmethod
     def borders(cls):
-        return cls._interface_border * 25
+        return cls().border * 25
 
 
 while True:
