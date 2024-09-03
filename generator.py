@@ -1,6 +1,5 @@
 from random import choice
 
-
 class Structures:
 
     _set_alphabet_upper = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
@@ -23,12 +22,8 @@ class Structures:
         3: ('@', '#', '$', '%', '^', '&', '*', '(', ')', '~', '`')
     }
 
-    _min_length = 6
-    _max_length = 18
-
 
 class Generator(Structures):
-
     default_difficulty = Structures._dict_difficulty['min']
     default_length = 8
 
@@ -51,8 +46,3 @@ class Generator(Structures):
             temp_gen_str += str(choice(temp_set))
             temp_gen_str += str(choice(Structures._set_alphabet_lower + Structures._set_alphabet_upper + Structures._set_numbers))
         return temp_gen_str if length % 2 == 0 else temp_gen_str + choice(Structures._set_alphabet_lower + Structures._set_alphabet_upper + Structures._set_numbers)
-
-    def validate_gen_str(self, gen_str: str) -> bool:
-        if len(gen_str) < self._min_length or len(gen_str) > self._max_length:
-            return False
-        return True

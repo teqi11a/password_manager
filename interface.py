@@ -7,9 +7,13 @@ class CodeExceptions:
         try:
             return int(st)
         except:
-            raise TypeError("Введите число")
+            print("Вы ввели неверное число")
+            UserInterface.menu()
 
 class Choices:
+
+    _min_length = 6
+    _max_length = 18
     __passw = ''
     __interface_borders = {
         1: "-",
@@ -18,8 +22,21 @@ class Choices:
     }
     @classmethod
     def generate_passw_interface(cls):
-        cls.__user_length = CodeExceptions.validate_number(input(f"{UserInterface.borders()}\nВведите длину пароля: \n{UserInterface.borders()}\n"))
-        cls.__user_difficulty = CodeExceptions.validate_number(input(f"{UserInterface.borders()}\nВведите сложность пароля: \n{UserInterface.borders()}\n"))
+        cls.__user_length = CodeExceptions.validate_number(input(f"{UserInterface.borders()}\n"
+                                                                 f"Введите длину пароля: \n"
+                                                                 f"{UserInterface.borders()}\n"))
+
+        if cls.__user_length < cls._min_length or cls.__user_length > cls._max_length:
+            print("Вы ввели неверную длину пароля\n")
+            return UserInterface.menu()
+
+        cls.__user_difficulty = CodeExceptions.validate_number(input(f"{UserInterface.borders()}\n"
+                                                                     f"Введите сложность пароля: \n"
+                                                                     f"{UserInterface.borders()}\n"))
+        if cls.__user_difficulty < 1 or cls.__user_difficulty > 3:
+            print("Вы ввели неверную опцию сложности пароля\n")
+            return UserInterface.menu()
+
         __passw = gen.Generator.generate(cls.__user_length, cls.__user_difficulty)
         return f"Ваш сгенерированный пароль --> {__passw}\n"
 
