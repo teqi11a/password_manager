@@ -1,4 +1,6 @@
 import interface
+import storage
+
 
 class Authorization:
 
@@ -8,28 +10,38 @@ class Authorization:
         1: "Зарегистрироваться",
         2: "Войти",
         3: "Сменить пароль",
-        4: "Выйти"
+        0: "Выйти"
     }
 
     @classmethod
     def login_menu(cls) -> bool:
         while True:
             if cls.__user_auth:
-                break
+                return cls.__user_auth
             else:
-                interface.UserInterface.borders()
+                print(interface.UserInterface.borders())
                 for key, value in cls.__menu.items():
                     print(f"{key} --> {value}")
-                interface.UserInterface.borders()
-                cls.__user_input = input("")
+                print(interface.UserInterface.borders())
+                cls.__user_input = int(input(""))
                 match cls.__user_input:
                     case 1:
-                        print()
+                        cls.__user_name = input("Придумайте имя для вашей учетной записи:\n")
+                        cls.__user_master_password = input("Придумайте мастер-пароль для вашей учетной записи:\n")
+                        storage.create_user(cls.__user_name, cls.__user_master_password)
                     case 2:
-                        pass
+                        cls.__user_name = input("Введите имя вашей учетной записи:\n")
+                        cls.__user_master_password = input("Введите мастер-пароль вашей учетной записи:\n")
+                        if storage.authenticate_user(cls.__user_name, cls.__user_master_password):
+                            cls.__user_auth = True
                     case 3:
-                        print()
-                    case 4:
+                        cls.__user_name = input("Введите имя вашей учетной записи:\n")
+                        cls.__user_master_password = input("Введите старый мастер-пароль вашей учетной записи:\n")
+                        if storage.check_user(cls.__user_name, cls.__user_master_password):
+                            cls.__user_new_master_password = input("Придумайте новый мастер-пароль для вашей учетной записи:\n")
+                            cls.__user_new_c_master_password = input("Подтвердите новый мастер-пароль для вашей учетной записи:\n")
+                            if cls.__user_new_master_password == cls.__user_new_c_master_password:
+                                storage.change_password(cls.__user_name, cls.__user_new_master_password)
+                    case 0:
                         print("До свидания!")
                         exit()
-        return cls.__user_auth

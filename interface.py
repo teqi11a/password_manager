@@ -13,8 +13,8 @@ class CodeExceptions:
 
 class Choices:
 
-    _min_length = 6
-    _max_length = 18
+    _min_length = 8
+    _max_length = 32
     __passw = ''
     __interface_borders = {
         1: "-",
@@ -23,7 +23,7 @@ class Choices:
     }
     @classmethod
     def generate_passw_interface(cls):
-        cls.__user_length = int(input(f"{UserInterface.borders()}\nВведите длину пароля: (6 - 16)\n{UserInterface.borders()}\n"))
+        cls.__user_length = int(input(f"{UserInterface.borders()}\nВведите длину пароля: ({cls._min_length} - {cls._max_length})\n{UserInterface.borders()}\n"))
 
         if cls.__user_length < cls._min_length or cls.__user_length > cls._max_length:
             print("Вы ввели неверную длину пароля\n")
@@ -35,6 +35,7 @@ class Choices:
             return UserInterface.menu()
 
         __passw = gen.Generator.generate(cls.__user_length, cls.__user_difficulty)
+        __save_generated_pass = input()
         return f"Ваш сгенерированный пароль --> {__passw}\n"
 
     @classmethod
@@ -95,4 +96,4 @@ class UserInterface:
         return ""
     @classmethod
     def borders(cls):
-        return cls().border * 25
+        return cls().border * 50
