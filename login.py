@@ -13,6 +13,11 @@ class Authorization:
         0: "Выйти"
     }
 
+    @staticmethod
+    def set_user_auth(user_auth: bool):
+        Authorization.__user_auth = user_auth
+        print(Authorization.__user_auth)
+
     @classmethod
     def login_menu(cls) -> bool:
         while True:

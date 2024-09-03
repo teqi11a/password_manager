@@ -1,15 +1,8 @@
 import generator as gen
-
-class CodeExceptions:
-
-    @staticmethod
-    def validate_number(st: str) -> int:
-            while True:
-                if int(st):
-                    return int(st)
-                else:
-                    st = input("Введите корректное число")
-
+import login
+from storage import save_passw
+from storage import unlogin
+import validator
 
 class Choices:
 
@@ -35,7 +28,10 @@ class Choices:
             return UserInterface.menu()
 
         __passw = gen.Generator.generate(cls.__user_length, cls.__user_difficulty)
-        __save_generated_pass = input()
+        __save_generated_pass = input("Сохранить пароль? (да/нет)(yes/no)\n")
+        if validator.CodeExceptions.validate_agreement(__save_generated_pass):
+            __service = input("Введите название сервиса: ")
+            save_passw( __service,__passw)
         return f"Ваш сгенерированный пароль --> {__passw}\n"
 
     @classmethod
@@ -61,7 +57,8 @@ class UserInterface:
         1: "Сгенерировать пароль",
         2: "Показать сохраненные пароли",
         3: "Поменять границы интерфейса",
-        4: "Выйти"
+        4: "Сохранить пароль",
+        0: "Выйти"
     }
 
     _interface_border = '*'
@@ -91,8 +88,11 @@ class UserInterface:
             case 3:
                 print(Choices.change_borders_interface())
             case 4:
+                pass
+            case 0:
                 print("До свидания!")
-                exit()
+                login.Authorization.set_user_auth(unlogin())
+                return "exit_to_login"
         return ""
     @classmethod
     def borders(cls):
