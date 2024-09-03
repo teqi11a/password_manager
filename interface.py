@@ -92,7 +92,7 @@ class UserInterface:
             case 4:
                 print("До свидания!")
                 exit()
-
+        return ""
     @classmethod
     def borders(cls):
         return cls().border * 25
