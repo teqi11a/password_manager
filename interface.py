@@ -1,7 +1,6 @@
 import generator as gen
 import login
-from storage import save_passw
-from storage import unlogin
+from storage import save_passw, logout
 import validator
 
 class Choices:
@@ -58,7 +57,7 @@ class UserInterface:
         2: "Показать сохраненные пароли",
         3: "Поменять границы интерфейса",
         4: "Сохранить пароль",
-        0: "Выйти"
+        0: "Выйти из учетной записи"
     }
 
     _interface_border = '*'
@@ -91,7 +90,7 @@ class UserInterface:
                 pass
             case 0:
                 print("До свидания!")
-                login.Authorization.set_user_auth(unlogin())
+                login.Authorization.set_user_auth(logout())
                 return "exit_to_login"
         return ""
     @classmethod
