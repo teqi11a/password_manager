@@ -8,6 +8,7 @@ CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL,
     master_password TEXT NOT NULL
+    salt BLOB NOT NULL
 )
 ''')
 
