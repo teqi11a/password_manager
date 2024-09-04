@@ -1,7 +1,7 @@
 import generator as gen
 import login
 from storage import save_passw, logout
-import validator
+from validator import CodeExceptions as Validator
 
 class Choices:
 
@@ -15,7 +15,8 @@ class Choices:
     }
     @classmethod
     def generate_passw_interface(cls):
-        cls.__user_length = int(input(f"{UserInterface.borders()}\nВведите длину пароля: ({cls._min_length} - {cls._max_length})\n{UserInterface.borders()}\n"))
+        cls.__user_length = Validator.validate_number_input(input(f"{UserInterface.borders()}\nВведите длину пароля: "
+                                                                  f"({cls._min_length} - {cls._max_length})\n{UserInterface.borders()}\n"))
 
         if cls.__user_length < cls._min_length or cls.__user_length > cls._max_length:
             print("Вы ввели неверную длину пароля\n")
@@ -27,9 +28,9 @@ class Choices:
             return UserInterface.menu()
 
         __passw = gen.Generator.generate(cls.__user_length, cls.__user_difficulty)
-        __save_generated_pass = input("Сохранить пароль? (да/нет)(yes/no)\n")
-        if validator.CodeExceptions.validate_agreement(__save_generated_pass):
-            __service = input("Введите название сервиса: ")
+        __save_generated_pass = Validator.validate_agreement(input("Сохранить пароль? (да/нет)(yes/no)\n"))
+        if __save_generated_pass:
+            __service = Validator.validate_service(input("Введите название сервиса: "))
             save_passw( __service,__passw)
         return f"Ваш сгенерированный пароль --> {__passw}\n"
 
@@ -37,7 +38,7 @@ class Choices:
     def change_borders_interface(cls):
         for key, value in cls.__interface_borders.items():
             print(f"{key} --> {value}")
-        cls.__user_choice = int(input())
+        cls.__user_choice = Validator.validate_number_input(input())
         match cls.__user_choice:
             case 1:
                 UserInterface.border = cls.__interface_borders[cls.__user_choice]
@@ -77,7 +78,7 @@ class UserInterface:
         for key, value in cls.__interface_list.items():
             print(f"{key} --> {value}")
         print(f"{cls.borders()}")
-        cls.__user_choice = int(input())
+        cls.__user_choice = Validator.validate_number_input(input())
 
         match cls.__user_choice:
             case 1:

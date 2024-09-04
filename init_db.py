@@ -27,6 +27,7 @@ CREATE TABLE activity_logs (
     user_id INTEGER,
     action TEXT NOT NULL,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    username TEXT NOT NULL DEFAULT 'unknown',
     FOREIGN KEY(user_id) REFERENCES users(id)
 )
 ''')
