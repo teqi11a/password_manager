@@ -88,7 +88,8 @@ class UserInterface:
             case 3:
                 print(Choices.change_borders_interface())
             case 4:
-                pass
+                save_passw(Validator.validate_service(input("Введите название сервиса: \n")),
+                           Validator.validate_password_strength(Validator.validate_password(input("Введите пароль: \n"))))
             case 0:
                 print("До свидания!")
                 login.Authorization.set_user_auth(logout())
