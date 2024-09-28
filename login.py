@@ -1,6 +1,7 @@
 from validator import CodeExceptions as Validator
 import interface
 import storage
+from generator import Generator
 
 
 class Authorization:
@@ -35,8 +36,13 @@ class Authorization:
                 match cls.__user_input:
                     case 1:
                         cls.__user_name = Validator.validate_username(input("Придумайте имя для вашей учетной записи:\n"))
-                        cls.__user_master_password = Validator.validate_password_strength(
-                            Validator.validate_password(input("Придумайте мастер-пароль для вашей учетной записи:\n")))
+                        gen_master_pass = input("Хотите сгенерировать мастер-пароль? (да/нет)(yes/no)\n")
+                        if Validator.validate_agreement(gen_master_pass):
+                            cls.__user_master_password = Generator.generate(16, 2)
+                            print("Ваш мастер-пароль --> ", cls.__user_master_password)
+                        else:
+                            cls.__user_master_password = Validator.validate_password_strength(
+                                Validator.validate_password(input("Придумайте мастер-пароль для вашей учетной записи:\n")))
                         storage.create_user(cls.__user_name, cls.__user_master_password)
                     case 2:
                         cls.__user_name = Validator.validate_username(input("Введите имя вашей учетной записи:\n"))
