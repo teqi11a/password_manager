@@ -33,16 +33,19 @@ class CodeExceptions:
     def validate_password_strength(st: str) -> str:
         if len(st) >= 8 and any(char.isdigit() for char in st) and any(char.isupper() for char in st) and any(char.islower() for char in st):
             print("Ваш пароль средней сложности.")
+            print("Регистрация прошла успешно!")
             return st
         elif (len(st) >= 12 and len(set(char.isupper() for char in st)) >= 2 and
               len(set(char.islower() for char in st)) >= 2 and any(char.isdigit() for char in st)
               and any(char.isupper() for char in st)
               and any(char for char in st if char in "!@#$%^&*_-+=?")):
             print("Ваш пароль высокой сложности.")
+            print("Регистрация прошла успешно!")
             return st
         else:
             print("Ваш пароль слишком слабый. Попробуйте ещё раз.")
-            return st
+            st = input("Пароль должен содержать от 8 до 20 символов. Попробуйте ещё раз: ")
+            CodeExceptions.validate_password_strength(st)
 
     @staticmethod
     def validate_password(st: str) -> str:
