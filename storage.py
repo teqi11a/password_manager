@@ -119,8 +119,8 @@ def generate_salt() -> bytes:
 class PasswordManager:
 
 
-    def __init__(self, master_password: str, salt: bytes):
-        self.key = derive_key(master_password, salt)
+    def __init__(self, master_password: str):
+        self.key = derive_key(master_password, generate_salt())
         self.fernet = Fernet(self.key)
 
 
