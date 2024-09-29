@@ -2,7 +2,6 @@ import sqlite3
 import bcrypt
 import crypto
 
-
 conn = sqlite3.connect('password_manager.db')
 c = conn.cursor()
 session_id = 0
@@ -12,8 +11,12 @@ p = ""
 
 
 def create_user(username, master_password):
+    """
+    Создание пользователя с хешированным паролем и сохранением соли.
+    """
+    salt = crypto.generate_salt()  # Генерируем соль
     hashed_password = bcrypt.hashpw(master_password.encode(), bcrypt.gensalt())
-    c.execute("INSERT INTO users (username, master_password, salt) VALUES (?, ?, ?)", (username, hashed_password, crypto.generate_salt()))
+    c.execute("INSERT INTO users (username, master_password, salt) VALUES (?, ?, ?)", (username, hashed_password, salt))
     conn.commit()
     global user
     user = username
@@ -21,9 +24,10 @@ def create_user(username, master_password):
     user = ""
 
 
-
-
 def authenticate_user(username, master_password):
+    """
+    Аутентификация пользователя с использованием хешированного пароля.
+    """
     c.execute("SELECT master_password FROM users WHERE username = ?", (username,))
     stored_password = c.fetchone()
     if stored_password and bcrypt.checkpw(master_password.encode(), stored_password[0]):
@@ -38,36 +42,36 @@ def authenticate_user(username, master_password):
         print("Неправильное имя пользователя или пароль")
 
 
-
-
 def log_activity(user_id, action):
+    """
+    Логирование действий пользователя.
+    """
     c.execute("INSERT INTO activity_logs (user_id, action, username) VALUES (?, ?, ?)", (user_id, action, user))
     conn.commit()
 
 
-
-
 def change_password(username, master_password):
+    """
+    Изменение мастер-пароля с обновлением хеша в базе данных.
+    """
     hashed_password = bcrypt.hashpw(master_password.encode(), bcrypt.gensalt())
     c.execute("UPDATE users SET master_password = ? WHERE username = ?", (hashed_password, username))
     conn.commit()
     log_activity(get_session_id(username), "Смена пароля")
 
 
-
-
 def save_passw(service, passw):
-    global p
-    p = crypto.PasswordManager(passw)
-    passw = p.encrypt_password(passw)
-    c.execute("INSERT INTO passwords (user_id, service, password) VALUES (?, ?, ?)", (session_id, service, passw))
+    c.execute("INSERT INTO passwords (user_id, service, password) VALUES (?, ?, ?)",
+              (session_id, service, passw))
     log_activity(get_session_id(user), "Сохранение пароля")
     conn.commit()
 
 
 
-
 def delete_user(username, master_password):
+    """
+    Удаление пользователя и всех его данных.
+    """
     if not check_user(username, master_password):
         print("Неправильное имя пользователя или пароль")
     else:
@@ -84,8 +88,10 @@ def delete_user(username, master_password):
             print("User not found")
 
 
-
 def check_user(username, master_password):
+    """
+    Проверка существующего пользователя по мастер-паролю.
+    """
     c.execute("SELECT master_password FROM users WHERE username = ?", (username,))
     stored_password = c.fetchone()
     if stored_password and bcrypt.checkpw(master_password.encode(), stored_password[0]):
@@ -94,9 +100,10 @@ def check_user(username, master_password):
         print("Неправильное имя пользователя или пароль")
 
 
-
-
 def get_session_id(username):
+    """
+    Получение session_id пользователя.
+    """
     try:
         __user_id = c.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()[0]
         return __user_id
@@ -105,9 +112,10 @@ def get_session_id(username):
         return None
 
 
-
-
 def logout() -> bool:
+    """
+    Выход из аккаунта.
+    """
     global session_id, flag, user
     log_activity(get_session_id(user), "Выход")
     session_id = 0

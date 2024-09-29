@@ -27,17 +27,21 @@ def generate_salt() -> bytes:
     return os.urandom(16)
 
 
+
 class PasswordManager:
-
-
-    def __init__(self, password: str):
-        self.key = derive_key(password, generate_salt())
+    def __init__(self, password: str, salt: bytes):
+        self.key = derive_key(password, salt)  # Используем переданную соль для генерации ключа
         self.fernet = Fernet(self.key)
 
-
     def encrypt_password(self, plain_password: str) -> bytes:
-        return self.fernet.encrypt(plain_password.encode())
+        encrypted_password = self.fernet.encrypt(plain_password.encode())
+        return encrypted_password
 
-
-    def decrypt_password(self, encrypted_password: bytes) -> str:
-        return self.fernet.decrypt(encrypted_password).decode()
+    def decrypt_password(self, encrypted_password: bytes, salt: bytes) -> str:
+        """
+        Дешифруем пароль с использованием соли.
+        """
+        # Используйте self.key, а не self.key.decode()
+        key = derive_key(self.key.decode(), salt)
+        fernet = Fernet(key)
+        return fernet.decrypt(encrypted_password).decode()
