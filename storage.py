@@ -3,13 +3,13 @@ import bcrypt
 import crypto
 
 
-
-
 conn = sqlite3.connect('password_manager.db')
 c = conn.cursor()
 session_id = 0
 flag = False
 user = ""
+p = ""
+
 
 def create_user(username, master_password):
     hashed_password = bcrypt.hashpw(master_password.encode(), bcrypt.gensalt())
@@ -19,6 +19,9 @@ def create_user(username, master_password):
     user = username
     log_activity(get_session_id(username), "Регистрация")
     user = ""
+
+
+
 
 def authenticate_user(username, master_password):
     c.execute("SELECT master_password FROM users WHERE username = ?", (username,))
@@ -34,9 +37,15 @@ def authenticate_user(username, master_password):
     else:
         print("Неправильное имя пользователя или пароль")
 
+
+
+
 def log_activity(user_id, action):
     c.execute("INSERT INTO activity_logs (user_id, action, username) VALUES (?, ?, ?)", (user_id, action, user))
     conn.commit()
+
+
+
 
 def change_password(username, master_password):
     hashed_password = bcrypt.hashpw(master_password.encode(), bcrypt.gensalt())
@@ -45,10 +54,18 @@ def change_password(username, master_password):
     log_activity(get_session_id(username), "Смена пароля")
 
 
-def save_passw(passw, service):
-    c.execute("INSERT INTO passwords (user_id, password, service) VALUES (?, ?, ?)", (session_id, service, passw))
+
+
+def save_passw(service, passw):
+    global p
+    p = crypto.PasswordManager(passw)
+    passw = p.encrypt_password(passw)
+    c.execute("INSERT INTO passwords (user_id, service, password) VALUES (?, ?, ?)", (session_id, service, passw))
     log_activity(get_session_id(user), "Сохранение пароля")
     conn.commit()
+
+
+
 
 def delete_user(username, master_password):
     if not check_user(username, master_password):
@@ -67,6 +84,7 @@ def delete_user(username, master_password):
             print("User not found")
 
 
+
 def check_user(username, master_password):
     c.execute("SELECT master_password FROM users WHERE username = ?", (username,))
     stored_password = c.fetchone()
@@ -75,6 +93,9 @@ def check_user(username, master_password):
     else:
         print("Неправильное имя пользователя или пароль")
 
+
+
+
 def get_session_id(username):
     try:
         __user_id = c.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()[0]
@@ -82,6 +103,8 @@ def get_session_id(username):
     except Exception as e:
         print(f"Error: {e}")
         return None
+
+
 
 
 def logout() -> bool:
