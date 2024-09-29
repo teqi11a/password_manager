@@ -1,6 +1,6 @@
 import generator as gen
 import login
-from storage import save_passw, logout
+from storage import save_passw, logout, get_all_passw, get_passw
 from validator import CodeExceptions as Validator
 
 class Choices:
@@ -13,6 +13,12 @@ class Choices:
         2: "@",
         3: "."
     }
+
+    __passw_interface = {
+        1: "Показать пароль",
+        2: "Показать все пароли"
+    }
+
     @classmethod
     def generate_passw_interface(cls):
         cls.__user_length = Validator.validate_number_input(input(f"{UserInterface.borders()}\nВведите длину пароля: "
@@ -47,6 +53,21 @@ class Choices:
             case 3:
                 UserInterface.border = cls.__interface_borders[cls.__user_choice]
         return f"Вы выбрали --> {cls.__interface_borders[cls.__user_choice]}"
+
+    @classmethod
+    def show_saved_passw_interface(cls):
+        UserInterface.borders()
+        for key, value in cls.__passw_interface.items():
+            print(f"{key} --> {value}")
+        UserInterface.borders()
+        cls.__user_choice = Validator.validate_number_input(input())
+        match cls.__user_choice:
+            case 1:
+                print(get_passw(service=input("Введите название сервиса: ")))
+            case 2:
+                print(get_all_passw())
+        return UserInterface.menu()
+
 
 
 class UserInterface:
@@ -84,7 +105,7 @@ class UserInterface:
             case 1:
                 print(Choices.generate_passw_interface())
             case 2:
-                pass
+                print(Choices.show_saved_passw_interface())
             case 3:
                 print(Choices.change_borders_interface())
             case 4:

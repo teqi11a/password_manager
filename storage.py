@@ -66,6 +66,28 @@ def save_passw(service, passw):
 
 
 
+def get_passw(service):
+    global p
+    c.execute("SELECT password FROM passwords WHERE user_id = ? AND service = ?", (session_id, service))
+    row = c.fetchone()
+    if row:
+        p = crypto.PasswordManager(row[1])  # Create a new instance of PasswordManager
+        return p.decrypt_password(row[1])
+    else:
+        return None
+
+
+
+def get_all_passw():
+    global p
+    c.execute("SELECT service, password FROM passwords WHERE user_id = ?", (session_id,))
+    decrypted_passwords = []
+    for row in c.fetchall():
+        p = crypto.PasswordManager(row[1])
+        decrypted_passwords.append((row[0], p.decrypt_password(row[1])))
+    return decrypted_passwords
+
+
 
 def delete_user(username, master_password):
     if not check_user(username, master_password):
