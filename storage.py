@@ -12,7 +12,7 @@ p = ""
 
 def create_user(username, master_password):
     """
-    Создание пользователя с хешированным паролем и сохранением соли.
+    Создание пользователя с хэшированным паролем и сохранением соли.
     """
     salt = crypto.generate_salt()  # Генерируем соль
     hashed_password = bcrypt.hashpw(master_password.encode(), bcrypt.gensalt())
@@ -66,6 +66,9 @@ def save_passw(service, passw):
     log_activity(get_session_id(user), "Сохранение пароля")
     conn.commit()
 
+def show_passw(service, passw):
+    c.execute("SELECT password FROM passwords WHERE service = ?", (service,))
+    conn.commit()
 
 
 def delete_user(username, master_password):

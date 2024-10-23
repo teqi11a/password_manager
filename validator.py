@@ -1,3 +1,6 @@
+from time import sleep
+
+
 class CodeExceptions:
 
 
@@ -33,6 +36,7 @@ class CodeExceptions:
     def validate_password_strength(st: str) -> str:
         if len(st) >= 8 and any(char.isdigit() for char in st) and any(char.isupper() for char in st) and any(char.islower() for char in st):
             print("Ваш пароль средней сложности.")
+            sleep(2)
             print("Регистрация прошла успешно!")
             return st
         elif (len(st) >= 12 and len(set(char.isupper() for char in st)) >= 2 and
@@ -40,6 +44,7 @@ class CodeExceptions:
               and any(char.isupper() for char in st)
               and any(char for char in st if char in "!@#$%^&*_-+=?")):
             print("Ваш пароль высокой сложности.")
+            sleep(2)
             print("Регистрация прошла успешно!")
             return st
         else:
