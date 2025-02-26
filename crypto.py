@@ -1,47 +1,41 @@
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.backends import default_backend
 from cryptography.fernet import Fernet
-import base64
-import os
+import bcrypt
 
-def derive_key(master_password: str, salt: bytes) -> bytes:
-    """
-    Генерация ключа шифрования из мастер-пароля.
-    """
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=salt,
-        iterations=100000,
-        backend=default_backend()
-    )
-    key = kdf.derive(master_password.encode())
-    return base64.urlsafe_b64encode(key)
+# Генерация и сохранение ключа шифрования
+def generate_key():
+    key = Fernet.generate_key()
+    with open("secret.key", "wb") as key_file:
+        key_file.write(key)
 
+# Загрузка ключа из файла
+def load_key():
+    return open("secret.key", "rb").read()
 
-def generate_salt() -> bytes:
-    """
-    Генерация случайной соли.
-    """
-    return os.urandom(16)
+# Функция генерации соли
+def generate_salt():
+    return bcrypt.gensalt().decode()
+
+# Функция хеширования пароля
+def hash_password(password: str) -> tuple:
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password.encode(), salt)
+    return hashed_password.decode(), salt
 
 
+# Функция проверки пароля
+def check_password(password: str, hashed_password: bytes) -> bool:
+    return bcrypt.checkpw(password.encode(), hashed_password)
 
-class PasswordManager:
-    def __init__(self, password: str, salt: bytes):
-        self.key = derive_key(password, salt)  # Используем переданную соль для генерации ключа
-        self.fernet = Fernet(self.key)
+# Функция шифрования паролей сервисов
+def encrypt_password(password: str) -> str:
+    key = load_key()
+    cipher = Fernet(key)
+    encrypted_password = cipher.encrypt(password.encode())
+    return encrypted_password.decode()
 
-    def encrypt_password(self, plain_password: str) -> bytes:
-        encrypted_password = self.fernet.encrypt(plain_password.encode())
-        return encrypted_password
-
-    def decrypt_password(self, encrypted_password: bytes, salt: bytes) -> str:
-        """
-        Дешифруем пароль с использованием соли.
-        """
-        # Используйте self.key, а не self.key.decode()
-        key = derive_key(self.key.decode(), salt)
-        fernet = Fernet(key)
-        return fernet.decrypt(encrypted_password).decode()
+# Функция расшифрования паролей сервисов
+def decrypt_password(encrypted_password: str) -> str:
+    key = load_key()
+    cipher = Fernet(key)
+    decrypted_password = cipher.decrypt(encrypted_password.encode())
+    return decrypted_password.decode()

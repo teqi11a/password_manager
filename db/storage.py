@@ -1,6 +1,7 @@
 import sqlite3
 import bcrypt
 import crypto
+from crypto import hash_password
 
 conn = sqlite3.connect('password_manager.db')
 c = conn.cursor()
@@ -12,11 +13,10 @@ p = ""
 
 def create_user(username, master_password):
     """
-    Создание пользователя с хэшированным паролем и сохранением соли.
+    Создание пользователя с хешированным паролем и сохранением соли.
     """
-    salt = crypto.generate_salt()  # Генерируем соль
-    hashed_password = bcrypt.hashpw(master_password.encode(), bcrypt.gensalt())
-    c.execute("INSERT INTO users (username, master_password, salt) VALUES (?, ?, ?)", (username, hashed_password, salt))
+    hashed_password, salt = hash_password(master_password)
+    c.execute("INSERT INTO users (username, master_password, salt) VALUES (?, ?, ?)", (username, hashed_password.encode(), salt))
     conn.commit()
     global user
     user = username
@@ -29,8 +29,8 @@ def authenticate_user(username, master_password):
     Аутентификация пользователя с использованием хешированного пароля.
     """
     c.execute("SELECT master_password FROM users WHERE username = ?", (username,))
-    stored_password = c.fetchone()
-    if stored_password and bcrypt.checkpw(master_password.encode(), stored_password[0]):
+    stored_password = c.fetchone()[0]
+    if crypto.check_password(master_password, stored_password):
         print("Авторизация успешна")
         global session_id, flag, user
         user = username
@@ -52,23 +52,24 @@ def log_activity(user_id, action):
 
 def change_password(username, master_password):
     """
-    Изменение мастер-пароля с обновлением хеша в базе данных.
+    Изменение мастер-пароля с обновлением хеша в базе данных. (В разработке)
     """
-    hashed_password = bcrypt.hashpw(master_password.encode(), bcrypt.gensalt())
-    c.execute("UPDATE users SET master_password = ? WHERE username = ?", (hashed_password, username))
-    conn.commit()
-    log_activity(get_session_id(username), "Смена пароля")
+    c.execute("SELECT master_password FROM users WHERE username = ?", (username,))
+    stored_password = c.fetchone()[0]
+    if crypto.check_password(master_password, stored_password):
+        hashed_password, salt = crypto.hash_password(master_password)
+        c.execute("UPDATE users SET master_password = ?, salt = ? WHERE username = ?", (hashed_password, salt, username))
+        conn.commit()
+        log_activity(get_session_id(username), "Смена пароля")
 
 
 def save_passw(service, passw):
+    passw = crypto.encrypt_password(passw)
     c.execute("INSERT INTO passwords (user_id, service, password) VALUES (?, ?, ?)",
               (session_id, service, passw))
     log_activity(get_session_id(user), "Сохранение пароля")
     conn.commit()
 
-def show_passw(service, passw):
-    c.execute("SELECT password FROM passwords WHERE service = ?", (service,))
-    conn.commit()
 
 
 def delete_user(username, master_password):
