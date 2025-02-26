@@ -1,9 +1,9 @@
-import login
-import interface
+from interfaces import interface, login_interface
+
 
 def main():
     while True:
-        if login.Authorization.login_menu():
+        if login_interface.Authorization.login_menu():
             interface.UserInterface.menu()
 
 if __name__ == '__main__':
