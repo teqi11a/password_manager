@@ -1,13 +1,15 @@
 import sqlite3
+import os
 
-conn = sqlite3.connect('password_manager.db')
+db_path = os.path.abspath('../password_manager.db')
+conn = sqlite3.connect(db_path)
 c = conn.cursor()
 
 c.execute('''
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL,
-    master_password TEXT NOT NULL
+    master_password TEXT NOT NULL,
     salt BLOB NOT NULL
 )
 ''')
