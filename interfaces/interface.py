@@ -1,5 +1,5 @@
 from helpers import generator as gen
-import login_interface
+from  interfaces import login_interface
 from db.storage import save_passw, logout
 from helpers.validator import CodeExceptions as Validator
 
