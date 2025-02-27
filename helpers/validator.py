@@ -72,7 +72,7 @@ class CodeExceptions:
     @staticmethod
     def validate_service(st: str) -> str:
         while True:
-            if 0 < len(st) < 25 and st.isalpha():
+            if (0 < len(st) < 25 and st.isalpha()) or (0 < len(st) < 25 and st.__contains__('_')):
                 return st
             else:
                 st = input("Сервис может содержать только буквы и пробелы. Попробуйте ещё раз: ")

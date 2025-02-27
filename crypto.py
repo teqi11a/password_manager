@@ -37,5 +37,5 @@ def encrypt_password(password: str) -> str:
 def decrypt_password(encrypted_password: str) -> str:
     key = load_key()
     cipher = Fernet(key)
-    decrypted_password = cipher.decrypt(encrypted_password.encode())
+    decrypted_password = cipher.decrypt(encrypted_password)
     return decrypted_password.decode()
