@@ -1,7 +1,8 @@
 from helpers import generator as gen
 from  interfaces import login_interface
-from db.storage import save_passw, logout
+from db.storage import save_passw, get_all_passwords, get_service, Helpers, Auth
 from helpers.validator import CodeExceptions as Validator
+from crypto import decrypt_password, check_password
 
 class Choices:
 
@@ -54,7 +55,30 @@ class Choices:
                 UserInterface.border = cls.__interface_borders[cls.__user_choice]
         return f"Вы выбрали --> {cls.__interface_borders[cls.__user_choice]}"
 
-
+    @classmethod
+    def show_passw_interface(cls):
+        for key, value in cls.__passw_interface.items():
+            print(f"{key} --> {value}")
+        cls.__user_choice = Validator.validate_number_input(input())
+        match cls.__user_choice:
+            case 1:
+                cls.__user_service = Validator.validate_service(input('Введите название сервиса:\n'))
+                __data = get_service(cls.__user_service)
+                print('')
+                for record in __data:
+                    print(f"Service: \"{record[0]}\" --> Password: \"{decrypt_password(record[1])}\"")
+                return ''
+            case 2:
+                cls.__confirm_all_passw = Validator.validate_password(input("Подтвердите свой мастер-пароль:\n"))
+                if check_password(cls.__confirm_all_passw, Helpers.get_hashed_password()):
+                    __data = get_all_passwords()
+                    print('')
+                    for record in __data:
+                        print(f"Service: \"{record[0]}\" --> Password: \"{decrypt_password(record[1])}\"")
+                    return ''
+                else:
+                    print("Введенный вами пароль не совпадает с вашим мастер-паролем!")
+                    return ''
 
 class UserInterface:
 
@@ -91,15 +115,15 @@ class UserInterface:
             case 1:
                 print(Choices.generate_passw_interface())
             case 2:
-                pass
+                print(Choices.show_passw_interface())
             case 3:
                 print(Choices.change_borders_interface())
             case 4:
                 save_passw(Validator.validate_service(input("Введите название сервиса: \n")),
-                           (Validator.validate_password(input("Введите пароль: \n"))))
+                           (input("Введите пароль: \n")))
             case 0:
                 print("До свидания!")
-                login_interface.Authorization.set_user_auth(logout())
+                login_interface.Authorization.set_user_auth(Auth.logout())
                 return "exit_to_login"
         return ""
     @classmethod

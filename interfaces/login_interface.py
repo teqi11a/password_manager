@@ -1,6 +1,6 @@
 from helpers.validator import CodeExceptions as Validator
 from interfaces import interface
-from db import storage
+from db.storage import Auth, UserActions, Helpers
 from helpers.generator import Generator
 
 
@@ -31,14 +31,14 @@ class Authorization:
         else:
             __user_master_password = Validator.validate_password_strength(
                 Validator.validate_password(input("Придумайте мастер-пароль для вашей учетной записи:\n")))
-        storage.create_user(__user_name, __user_master_password)
+        UserActions.create_user(__user_name, __user_master_password)
 
 
     @staticmethod
     def login():
         __user_name = Validator.validate_username(input("Введите имя вашей учетной записи:\n"))
         __user_master_password = Validator.validate_password(input("Введите мастер-пароль вашей учетной записи:\n"))
-        if storage.authenticate_user(__user_name, __user_master_password):
+        if Auth.authenticate_user(__user_name, __user_master_password):
             Authorization.__user_auth = True
 
     @staticmethod
@@ -46,13 +46,13 @@ class Authorization:
         __user_name = Validator.validate_username(input("Введите имя вашей учетной записи:\n"))
         __user_master_password = Validator.validate_password(
             input("Введите старый мастер-пароль вашей учетной записи:\n"))
-        if storage.check_user(__user_name, __user_master_password):
+        if Helpers.check_user(__user_name, __user_master_password):
             __user_new_master_password = Validator.validate_password_strength(
                 Validator.validate_password(input("Придумайте новый мастер-пароль для вашей учетной записи:\n")))
             __user_new_c_master_password = Validator.validate_password(
                 input("Подтвердите новый мастер-пароль для вашей учетной записи:\n"))
             if __user_new_master_password == __user_new_c_master_password:
-                storage.change_password(__user_name, __user_new_master_password)
+                UserActions.change_password(__user_name, __user_new_master_password)
 
     @staticmethod
     def logout():
@@ -62,8 +62,8 @@ class Authorization:
         __user_sure = Validator.validate_agreement(
             input(
                 "Вы уверены, что хотите удалить учетную запись? (да/нет)(yes/no)\n(Удалятся также все сохраненные пароли)\n"))
-        if storage.check_user(__user_name, __user_master_password) and __user_sure:
-            storage.delete_user(__user_name, __user_master_password)
+        if Helpers.check_user(__user_name, __user_master_password) and __user_sure:
+            UserActions.delete_user(__user_name, __user_master_password)
             __user_auth = False
         else:
             print("Вы ввели неправильный мастер-пароль. Попробуйте ещё раз.")
