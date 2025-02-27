@@ -1,7 +1,7 @@
 import sqlite3
 import bcrypt
-from crypto import hash_password,check_password, encrypt_password
-
+from crypto import hash_password,check_password, encrypt_password, generate_key
+from core.session import Session
 conn = sqlite3.connect('password_manager.db')
 c = conn.cursor()
 session_id = 0
@@ -10,6 +10,8 @@ user = ""
 p = ""
 
 class Helpers:
+
+
     @staticmethod
     def check_user(username, master_password):
         """
@@ -39,6 +41,12 @@ class Helpers:
         c.execute("SELECT master_password FROM users WHERE username = ?", (user,))
         return c.fetchone()[0]
 
+    @staticmethod
+    def load_key():
+        c.execute("SELECT key FROM user_encryption_keys where user_id = ?", (session_id,))
+        Session.set_user_key(c.fetchone()[0])
+        return ''
+
 class Auth:
 
     @staticmethod
@@ -54,6 +62,7 @@ class Auth:
             user = username
             session_id = Helpers.get_session_id(username)
             log_activity(session_id, "Авторизация")
+            Helpers.load_key()
             flag = True
             return flag
         else:
@@ -82,8 +91,11 @@ class UserActions:
         hashed_password, salt = hash_password(master_password)
         c.execute("INSERT INTO users (username, master_password, salt) VALUES (?, ?, ?)", (username, hashed_password.encode(), salt))
         conn.commit()
+
         global user
         user = username
+        c.execute("INSERT INTO user_encryption_keys (user_id, key) VALUES (?, ?)", (Helpers.get_session_id(username), generate_key()))
+        conn.commit()
         log_activity(Helpers.get_session_id(username), "Регистрация")
         user = ""
 

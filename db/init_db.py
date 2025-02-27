@@ -35,5 +35,14 @@ CREATE TABLE activity_logs (
 )
 ''')
 
+c.execute('''
+CREATE TABLE user_encryption_keys (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    key TEXT NOT NULL,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+)
+''')
+
 conn.commit()
 conn.close()

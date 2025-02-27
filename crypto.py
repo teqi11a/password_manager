@@ -1,19 +1,10 @@
+from core.session import Session
 from cryptography.fernet import Fernet
 import bcrypt
-
 # Генерация и сохранение ключа шифрования
 def generate_key():
     key = Fernet.generate_key()
-    with open("secret.key", "wb") as key_file:
-        key_file.write(key)
-
-# Загрузка ключа из файла
-def load_key():
-    return open("secret.key", "rb").read()
-
-# Функция генерации соли
-def generate_salt():
-    return bcrypt.gensalt().decode()
+    return key
 
 # Функция хеширования пароля
 def hash_password(password: str) -> tuple:
@@ -28,14 +19,14 @@ def check_password(password: str, hashed_password: bytes) -> bool:
 
 # Функция шифрования паролей сервисов
 def encrypt_password(password: str) -> str:
-    key = load_key()
+    key = Session.get_user_key()
     cipher = Fernet(key)
     encrypted_password = cipher.encrypt(password.encode())
     return encrypted_password.decode()
 
 # Функция расшифрования паролей сервисов
 def decrypt_password(encrypted_password: str) -> str:
-    key = load_key()
+    key = Session.get_user_key()
     cipher = Fernet(key)
     decrypted_password = cipher.decrypt(encrypted_password)
     return decrypted_password.decode()
