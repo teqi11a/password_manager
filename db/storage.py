@@ -1,166 +1,178 @@
 import sqlite3
-import bcrypt
-from crypto import hash_password,check_password, encrypt_password, generate_key
-from core.session import Session
-conn = sqlite3.connect('password_manager.db')
-c = conn.cursor()
-session_id = 0
-flag = False
-user = ""
-p = ""
+from crypto import (
+    hash_password,
+    check_password,
+    encrypt_password,
+    decrypt_password,
+    generate_encrypted_key,
+    decrypt_user_key
+)
 
-class Helpers:
+conn = sqlite3.connect('password_manager.db', check_same_thread=False)
 
 
+class Session:
+    _current_user = None
+    _fernet_key = None
+    _auth_flag = False
+
+    @classmethod
+    def initialize(cls, user_id: int, username: str, fernet_key: bytes):
+        cls._current_user = {'id': user_id, 'username': username}
+        cls._fernet_key = fernet_key
+        cls._auth_flag = True  # Устанавливаем флаг при авторизации
+
+    @classmethod
+    def clear(cls):
+        cls._current_user = None
+        # Безопасное удаление ключа из памяти
+        if cls._fernet_key:
+            cls._fernet_key = b'\x00' * len(cls._fernet_key)
+        cls._auth_flag = False  # Сбрасываем флаг при выходе
+
+    @classmethod
+    def is_authenticated(cls) -> bool:
+        return cls._auth_flag  # Метод для проверки состояния авторизации
+
+    @classmethod
+    def get_user_id(cls):
+        return cls._current_user['id'] if cls._current_user else None
+
+    @classmethod
+    def get_fernet_key(cls):
+        return cls._fernet_key
+
+
+class AuthService:
     @staticmethod
-    def check_user(username, master_password):
-        """
-        Проверка существующего пользователя по мастер-паролю.
-        """
-        c.execute("SELECT master_password FROM users WHERE username = ?", (username,))
-        stored_password = c.fetchone()
-        if stored_password and bcrypt.checkpw(master_password.encode(), stored_password[0]):
-            return True
-        else:
-            print("Неправильное имя пользователя или пароль")
-
-    @staticmethod
-    def get_session_id(username):
-        """
-        Получение session_id пользователя.
-        """
+    def register(username: str, master_password: str):
         try:
-            __user_id = c.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()[0]
-            return __user_id
+            kdf_salt, encrypted_key = generate_encrypted_key(master_password)
+            hashed_password = hash_password(master_password)
+
+            with conn:
+                cur = conn.execute('''
+                    INSERT INTO users 
+                    (username, master_password, kdf_salt, encrypted_key)
+                    VALUES (?, ?, ?, ?)
+                ''', (username, hashed_password, kdf_salt, encrypted_key))
+
+                Session.initialize(cur.lastrowid, username, None)
+                log_activity("Регистрация")
+
+            return True
+        except sqlite3.IntegrityError:
+            print("Пользователь с таким именем уже существует")
+            return False
+
+    @staticmethod
+    def login(username: str, master_password: str) -> bool:
+        try:
+            row = conn.execute('''
+                SELECT id, master_password, kdf_salt, encrypted_key 
+                FROM users WHERE username = ?
+            ''', (username,)).fetchone()
+
+            if not row or not check_password(master_password, row[1]):
+                return False
+
+            user_id, _, kdf_salt, encrypted_key = row
+            fernet_key = decrypt_user_key(master_password, kdf_salt, encrypted_key)
+
+            Session.initialize(user_id, username, fernet_key)
+            log_activity("Авторизация")
+            return True
+
         except Exception as e:
-            print(f"Error: {e}")
-            return None
+            print(f"Ошибка авторизации: {str(e)}")
+            return False
 
     @staticmethod
-    def get_hashed_password():
-        c.execute("SELECT master_password FROM users WHERE username = ?", (user,))
-        return c.fetchone()[0]
+    def logout():
+        log_activity("Выход")
+        Session.clear()
 
-    @staticmethod
-    def load_key():
-        c.execute("SELECT key FROM user_encryption_keys where user_id = ?", (session_id,))
-        Session.set_user_key(c.fetchone()[0])
-        return ''
 
-class Auth:
-
-    @staticmethod
-    def authenticate_user(username, master_password):
-        """
-        Аутентификация пользователя с использованием хешированного пароля.
-        """
-        c.execute("SELECT master_password FROM users WHERE username = ?", (username,))
-        stored_password = c.fetchone()[0]
-        if check_password(master_password, stored_password):
-            print("Авторизация успешна")
-            global session_id, flag, user
-            user = username
-            session_id = Helpers.get_session_id(username)
-            log_activity(session_id, "Авторизация")
-            Helpers.load_key()
-            flag = True
-            return flag
-        else:
-            print("Неправильное имя пользователя или пароль")
-
-    @staticmethod
-    def logout() -> bool:
-        """
-        Выход из аккаунта.
-        """
-        global session_id, flag, user
-        log_activity(Helpers.get_session_id(user), "Выход")
-        session_id = 0
-        flag = False
-        user = ""
-        print("Вы вышли из аккаунта")
-        return flag
-
-class UserActions:
-
-    @staticmethod
-    def create_user(username, master_password):
-        """
-        Создание пользователя с хешированным паролем и сохранением соли.
-        """
-        hashed_password, salt = hash_password(master_password)
-        c.execute("INSERT INTO users (username, master_password, salt) VALUES (?, ?, ?)", (username, hashed_password.encode(), salt))
+def log_activity(action: str):
+    if user_id := Session.get_user_id():
+        conn.execute('''
+            INSERT INTO activity_logs (user_id, action)
+            VALUES (?, ?)
+        ''', (user_id, action))
         conn.commit()
 
-        global user
-        user = username
-        c.execute("INSERT INTO user_encryption_keys (user_id, key) VALUES (?, ?)", (Helpers.get_session_id(username), generate_key()))
+
+class PasswordManager:
+    @staticmethod
+    def save_password(service: str, password: str, note: str = ""):
+        if not (key := Session.get_fernet_key()):
+            raise ValueError("Not authenticated")
+
+        encrypted = encrypt_password(password, key)
+
+        # Проверяем существующие записи
+        existing = conn.execute('''
+            SELECT service_name FROM passwords 
+            WHERE user_id = ? AND service_name = ?
+        ''', (Session.get_user_id(), service)).fetchall()
+
+        if existing:
+            print(f"Внимание! Для сервиса '{service}' уже существует {len(existing)} паролей")
+            confirm = input("Всё равно сохранить? (да/нет): ")
+            if confirm.lower() not in ['y', 'да', 'yes']:
+                return
+
+        conn.execute('''
+            INSERT INTO passwords (user_id, service_name, encrypted_password)
+            VALUES (?, ?, ?)
+        ''', (Session.get_user_id(), service, encrypted))
         conn.commit()
-        log_activity(Helpers.get_session_id(username), "Регистрация")
-        user = ""
-
+        log_activity(f"Сохранение пароля для {service}")
 
     @staticmethod
-    def change_password(username, master_password):
-        """
-        Изменение мастер-пароля с обновлением хеша в базе данных. (В разработке)
-        """
-        c.execute("SELECT master_password FROM users WHERE username = ?", (username,))
-        stored_password = c.fetchone()[0]
-        if check_password(master_password, stored_password):
-            hashed_password, salt = hash_password(master_password)
-            c.execute("UPDATE users SET master_password = ?, salt = ? WHERE username = ?", (hashed_password, salt, username))
-            conn.commit()
-            log_activity(Helpers.get_session_id(username), "Смена пароля")
-
+    def delete_password(pwd_id: int):
+        conn.execute('''
+            DELETE FROM passwords
+            WHERE id = ? AND user_id = ?
+        ''', (pwd_id, Session.get_user_id()))
+        conn.commit()
+        log_activity(f"Удаление пароля ID {pwd_id}")
 
     @staticmethod
-    def delete_user(username, master_password):
-        """
-        Удаление пользователя и всех его данных.
-        """
-        if not Helpers.check_user(username, master_password):
-            print("Неправильное имя пользователя или пароль")
-        else:
-            user_id = Helpers.get_session_id(username)
-            if user_id is not None:
-                global user
-                user = username
-                c.execute("DELETE FROM users WHERE username = ?", (username,))
-                c.execute("DELETE FROM passwords WHERE user_id = ?", (user_id,))
-                log_activity(1, "Удаление аккаунта")
-                user = ""
-                conn.commit()
-            else:
-                print("User not found")
+    def update_password(pwd_id: int, new_password: str):
+        encrypted = encrypt_password(new_password, Session.get_fernet_key())
+        conn.execute('''
+            UPDATE passwords
+            SET encrypted_password = ?
+            WHERE id = ? AND user_id = ?
+        ''', (encrypted, pwd_id, Session.get_user_id()))
+        conn.commit()
+        log_activity(f"Обновление пароля ID {pwd_id}")
 
+    @staticmethod
+    def get_password(service: str) -> tuple:
+        if not (key := Session.get_fernet_key()):
+            raise ValueError("Not authenticated")
 
+        row = conn.execute('''
+            SELECT passwords.service_name, encrypted_password FROM passwords
+            WHERE user_id = ? AND service_name = ?
+        ''', (Session.get_user_id(), service)).fetchone()
+        return row[0], decrypt_password(row[1], key)
 
-def save_passw(service, passw):
-    passw = encrypt_password(passw)
-    c.execute("INSERT INTO passwords (user_id, service, password) VALUES (?, ?, ?)",
-              (session_id, service, passw))
-    log_activity(Helpers.get_session_id(user), "Сохранение пароля")
-    conn.commit()
+    @staticmethod
+    def get_all_passwords() -> list:
+        if not (key := Session.get_fernet_key()):
+            raise ValueError("Not authenticated")
 
+        rows = conn.execute('''
+            SELECT id, service_name, encrypted_password 
+            FROM passwords
+            WHERE user_id = ?
+            ORDER BY created_at
+        ''', (Session.get_user_id(),)).fetchall()
 
-def get_service(string: str):
-    c.execute("SELECT service, password FROM passwords WHERE user_id = ? AND service = ?", (session_id, string))
-    data = c.fetchall()
-    log_activity(session_id, f'Получения пароля сервиса {string}')
-    return data
-
-def get_all_passwords():
-    c.execute("SELECT service, password FROM passwords WHERE user_id = ?", (session_id,))
-    data = c.fetchall()
-    log_activity(session_id, f'Получение всех паролей')
-    return data
-
-
-
-def log_activity(user_id, action):
-    """
-    Логирование действий пользователя.
-    """
-    c.execute("INSERT INTO activity_logs (user_id, action, username) VALUES (?, ?, ?)", (user_id, action, user))
-    conn.commit()
+        return [
+            (row[0], row[1], decrypt_password(row[2], key))
+            for row in rows
+        ]

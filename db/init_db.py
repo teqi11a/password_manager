@@ -1,48 +1,73 @@
 import sqlite3
-import os
+from pathlib import Path
 
-db_path = os.path.abspath('../password_manager.db')
-conn = sqlite3.connect(db_path)
-c = conn.cursor()
 
-c.execute('''
-CREATE TABLE users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
-    master_password TEXT NOT NULL,
-    salt BLOB NOT NULL
-)
-''')
+def initialize_database():
+    # Определяем абсолютный путь к базе данных
+    db_path = Path(__file__).parent.parent / 'password_manager.db'
 
-c.execute('''
-CREATE TABLE passwords (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    password TEXT NOT NULL,
-    service TEXT NOT NULL,
-    FOREIGN KEY(user_id) REFERENCES users(id)
-)
-''')
+    # Создаем директорию если не существует
+    db_path.parent.mkdir(parents=True, exist_ok=True)
 
-c.execute('''
-CREATE TABLE activity_logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    action TEXT NOT NULL,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    username TEXT NOT NULL DEFAULT 'unknown',
-    FOREIGN KEY(user_id) REFERENCES users(id)
-)
-''')
+    conn = None
+    try:
+        conn = sqlite3.connect(str(db_path))
+        conn.execute("PRAGMA foreign_keys = ON")
 
-c.execute('''
-CREATE TABLE user_encryption_keys (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    key TEXT NOT NULL,
-    FOREIGN KEY(user_id) REFERENCES users(id)
-)
-''')
+        cursor = conn.cursor()
 
-conn.commit()
-conn.close()
+        # Проверяем существование таблиц
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
+        table_exists = cursor.fetchone()
+
+        if not table_exists:
+            cursor.executescript('''
+                CREATE TABLE users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    master_password TEXT NOT NULL,
+                    kdf_salt TEXT NOT NULL,
+                    encrypted_key TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE passwords (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    service_name TEXT NOT NULL,
+                    encrypted_password TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                );
+
+                CREATE TABLE activity_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    action TEXT NOT NULL,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(user_id) REFERENCES users(id)
+                );
+            ''')
+
+            # Создаем индексы
+            cursor.execute('''
+                CREATE INDEX idx_service_names 
+                ON passwords(service_name)
+            ''')
+
+            conn.commit()
+            print("Database tables created successfully")
+        else:
+            print("Database already initialized")
+
+    except sqlite3.Error as e:
+        print(f"Database error: {str(e)}")
+        if conn:
+            conn.rollback()
+    finally:
+        if conn:
+            conn.close()
+
+
+if __name__ == "__main__":
+    initialize_database()
