@@ -1,7 +1,7 @@
-from helpers.validator import CodeExceptions as Validator
+from helpers.validator import InputValidation as Validator
 from interfaces import interface
-from db.storage import AuthService, PasswordManager, Session
-from helpers.generator import Generator
+from db.storage import AuthService, Session
+from core.generator import PasswordGenerator
 
 
 class Authorization:
@@ -21,10 +21,10 @@ class Authorization:
 
         gen_master_pass = input("Хотите сгенерировать мастер-пароль? (да/нет)(yes/no)\n")
         if Validator.validate_agreement(gen_master_pass):
-            master_password = Generator.generate(16, 2)
+            master_password = PasswordGenerator.generate(16, 2)
             print("Ваш мастер-пароль --> ", master_password)
         else:
-            master_password = Validator.validate_password_strength(
+            master_password = Validator.validate_password(
                 Validator.validate_password(input("Придумайте мастер-пароль:\n")))
             if AuthService.register(username, master_password):
                 print("Регистрация прошла успешно!")

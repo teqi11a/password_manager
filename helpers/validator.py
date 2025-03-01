@@ -1,8 +1,8 @@
+import re
 from time import sleep
 
 
-class CodeExceptions:
-
+class InputValidation:
 
     @staticmethod
     def validate_number_input(st: str) -> int:
@@ -50,7 +50,7 @@ class CodeExceptions:
         else:
             print("Ваш пароль слишком слабый. Попробуйте ещё раз.")
             st = input("Пароль должен содержать от 8 до 20 символов. Попробуйте ещё раз: ")
-            CodeExceptions.validate_password_strength(st)
+            InputValidation.validate_password_strength(st)
 
     @staticmethod
     def validate_password(st: str) -> str:
@@ -70,9 +70,10 @@ class CodeExceptions:
 
 
     @staticmethod
-    def validate_service(st: str) -> str:
+    def validate_service(st: str) -> str | None:
+        pattern = r'[a-zA-Z-._]'
         while True:
-            if (0 < len(st) < 25 and st.isalpha()) or (0 < len(st) < 25 and st.__contains__('_')):
+            if re.compile(pattern):
                 return st
             else:
                 st = input("Сервис может содержать только буквы и пробелы. Попробуйте ещё раз: ")
