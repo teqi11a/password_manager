@@ -1,13 +1,11 @@
 from helpers.validator import CodeExceptions as Validator
 from interfaces import interface
-from db.storage import Auth, UserActions, Helpers
+from db.storage import AuthService, PasswordManager, Session
 from helpers.generator import Generator
 
 
 class Authorization:
-
     __user_auth = False
-
     __menu = {
         1: "Зарегистрироваться",
         2: "Войти",
@@ -16,79 +14,67 @@ class Authorization:
         0: "Выйти"
     }
 
-    @staticmethod
-    def set_user_auth(user_auth: bool):
-        Authorization.__user_auth = user_auth
-        print(Authorization.__user_auth)
 
     @staticmethod
     def register():
-        __user_name = Validator.validate_username(input("Придумайте имя для вашей учетной записи:\n"))
+        username = Validator.validate_username(input("Придумайте имя для вашей учетной записи:\n"))
+
         gen_master_pass = input("Хотите сгенерировать мастер-пароль? (да/нет)(yes/no)\n")
         if Validator.validate_agreement(gen_master_pass):
-            __user_master_password = Generator.generate(16, 2)
-            print("Ваш мастер-пароль --> ", __user_master_password)
+            master_password = Generator.generate(16, 2)
+            print("Ваш мастер-пароль --> ", master_password)
         else:
-            __user_master_password = Validator.validate_password_strength(
-                Validator.validate_password(input("Придумайте мастер-пароль для вашей учетной записи:\n")))
-        UserActions.create_user(__user_name, __user_master_password)
-
+            master_password = Validator.validate_password_strength(
+                Validator.validate_password(input("Придумайте мастер-пароль:\n")))
+            if AuthService.register(username, master_password):
+                print("Регистрация прошла успешно!")
 
     @staticmethod
     def login():
-        __user_name = Validator.validate_username(input("Введите имя вашей учетной записи:\n"))
-        __user_master_password = Validator.validate_password(input("Введите мастер-пароль вашей учетной записи:\n"))
-        if Auth.authenticate_user(__user_name, __user_master_password):
+        username = Validator.validate_username(input("Введите имя вашей учетной записи:\n"))
+        master_password = Validator.validate_password(input("Введите мастер-пароль:\n"))
+        if AuthService.login(username, master_password):
             Authorization.__user_auth = True
+            print("Авторизация успешна!\n")
+        else:
+            print("Ошибка авторизации")
 
     @staticmethod
     def change_password():
-        __user_name = Validator.validate_username(input("Введите имя вашей учетной записи:\n"))
-        __user_master_password = Validator.validate_password(
-            input("Введите старый мастер-пароль вашей учетной записи:\n"))
-        if Helpers.check_user(__user_name, __user_master_password):
-            __user_new_master_password = Validator.validate_password_strength(
-                Validator.validate_password(input("Придумайте новый мастер-пароль для вашей учетной записи:\n")))
-            __user_new_c_master_password = Validator.validate_password(
-                input("Подтвердите новый мастер-пароль для вашей учетной записи:\n"))
-            if __user_new_master_password == __user_new_c_master_password:
-                UserActions.change_password(__user_name, __user_new_master_password)
+        # Реализация смены пароля требует дополнительных методов в AuthService
+        print("Функция в разработке")
 
     @staticmethod
-    def logout():
-        __user_name = Validator.validate_username(input("Введите имя вашей учетной записи:\n"))
-        __user_master_password = Validator.validate_password(
-            input("Введите мастер-пароль вашей учетной записи: \n"))
-        __user_sure = Validator.validate_agreement(
-            input(
-                "Вы уверены, что хотите удалить учетную запись? (да/нет)(yes/no)\n(Удалятся также все сохраненные пароли)\n"))
-        if Helpers.check_user(__user_name, __user_master_password) and __user_sure:
-            UserActions.delete_user(__user_name, __user_master_password)
-            __user_auth = False
-        else:
-            print("Вы ввели неправильный мастер-пароль. Попробуйте ещё раз.")
+    def delete_account():
+        username = Validator.validate_username(input("Введите имя вашей учетной записи:\n"))
+        master_password = Validator.validate_password(input("Введите мастер-пароль:\n"))
+        confirmation = Validator.validate_agreement(
+            input("Вы уверены, что хотите удалить учетную запись? (да/нет)\n"))
+
+        # Требуется реализация метода delete_user в AuthService
+        print("Функция в разработке")
 
     @classmethod
     def login_menu(cls):
         while True:
-            if cls.__user_auth:
-                return cls.__user_auth
-            else:
-                print("\nВыберите опцию из списка: \n")
-                print(interface.UserInterface.borders())
-                for key, value in cls.__menu.items():
-                    print(f"{key} --> {value}")
-                print(interface.UserInterface.borders())
-                cls.__user_input = Validator.validate_number_input(input())
-                match cls.__user_input:
-                    case 1:
-                        cls.register()
-                    case 2:
-                        cls.login()
-                    case 3:
-                        cls.change_password()
-                    case 4:
-                        cls.logout()
-                    case 0:
-                        print("До свидания!")
-                        exit()
+            if Session.is_authenticated():
+                return True
+            print("\nМеню авторизации:\n" + interface.UserInterface.borders())
+            for key, value in cls.__menu.items():
+                print(f"{key} --> {value}")
+            print(interface.UserInterface.borders())
+
+            choice = Validator.validate_number_input(input("Выберите опцию: "))
+            match choice:
+                case 1:
+                    cls.register()
+                case 2:
+                    cls.login()
+                case 3:
+                    cls.change_password()
+                case 4:
+                    cls.delete_account()
+                case 0:
+                    exit("До свидания!")
+                case _:
+                    print("Неверный выбор")
