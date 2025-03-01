@@ -1,5 +1,7 @@
 import sqlite3
-from crypto import (
+
+from core import crypto
+from core.crypto import (
     hash_password,
     check_password,
     encrypt_password,
@@ -103,6 +105,11 @@ def log_activity(action: str):
 
 
 class PasswordManager:
+
+    @staticmethod
+    def check_password(password: str) -> bool:
+        hashed_password = conn.execute("SELECT master_password FROM users WHERE id = ?", (Session.get_user_id(),)).fetchone()[0]
+        return crypto.check_password(password, hashed_password)
     @staticmethod
     def save_password(service: str, password: str, note: str = ""):
         if not (key := Session.get_fernet_key()):
