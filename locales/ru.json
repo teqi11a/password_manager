@@ -1,0 +1,99 @@
+{
+  "ru": {
+    "LoginInterface": {
+      "LoginMenu": {
+        "AuthorizationMenu": "\nМеню авторизации:",
+        "Exit": "До свидания!",
+        "WrongOption": "Неверный выбор"
+      },
+      "LoginMenuOptions": {
+        "Register": "Зарегистрироваться",
+        "Login": "Войти",
+        "ChangePassword": "Сменить пароль",
+        "DeleteAccount": "Удалить аккаунт",
+        "ChangeLanguage": "Сменить язык",
+        "Exit": "Выйти"
+      },
+      "Register": {
+        "RegisterUsername": "Придумайте имя для вашей учетной записи:\n",
+        "RegisterPassword": "Хотите сгенерировать мастер-пароль? (да/нет)\n",
+        "YourMasterPassword": "Ваш мастер-пароль --> ",
+        "CreateMasterPassword": "Придумайте мастер-пароль:\n",
+        "SuccessfulRegister": "Регистрация прошла успешно!"
+      },
+      "Login": {
+        "EnterName": "Введите имя вашей учетной записи\n",
+        "EnterMasterPassword": "Введите мастер-пароль:\n",
+        "SuccessfulAuthorization": "Авторизация успешна!\n",
+        "FailedAuthorization": "Ошибка авторизации\n"
+      },
+      "ChangeLanguage":{
+        "ChangeOption": "1: Русский\n2: English\n",
+        "IncorrectLanguage": "Неверный язык!"
+      }
+    },
+    "MainInterface": {
+      "ShowPasswordsOptions": {
+        "OnePass": "Показать пароль",
+        "AllPass": "Показать все пароли"
+      },
+      "GeneratePassword": {
+        "InputPasswordLength": "Введите длину пароля (8-64): ",
+        "InputPasswordComplexity": "Выберите сложность (1-3):\n1. Базовый\n2. Продвинутый\n3. Максимальный\n",
+        "GeneratedPassword": "Сгенерированный пароль: ",
+        "SavePasswordAgreement": "Сохранить пароль? (да/нет): ",
+        "ServiceInput": "Введите название сервиса: ",
+        "GenerationFailed": "Ошибка генерации: "
+      },
+      "SavePassword": {
+        "ServiceInput": "Введите название сервиса: \n",
+        "EnterPassword": "Введите пароль: \n",
+        "PasswordSaveSuccess": "Пароль успешно сохранен!"
+      },
+      "ShowPasswordInterface": {
+        "ServiceName": "Название сервиса: ",
+        "ServiceOutput": "Сервис: ",
+        "PasswordOutput": " -> Пароль: ",
+        "ConfirmAction": "Подтвердите действие используя мастер-пароль:\n",
+        "NoPasswordsFound": "Нет сохраненных паролей",
+        "SavedPasswords": "\nСохраненные пароли:\n",
+        "ShowID": "[ID: ",
+        "WrongMasterPassword": "Неверный мастер-пароль!\n",
+        "WrongOption": "Неверный выбор"
+      },
+      "MenuInterface": {
+        "InterfaceOptions": {
+          "GeneratePassword": "Сгенерировать пароль",
+          "ShowPasswords": "Показать пароли",
+          "SavePassword": "Сохранить пароль",
+          "ChangeDesign": "Изменить оформление",
+          "Logout": "Выйти"
+        },
+        "FunctionInDevelopment": "Функция в разработке\n",
+        "UserLogout": "Вы вышли из системы\n",
+        "WrongOption": "Неверный выбор"
+      }
+    },
+    "InitDB": {
+      "Created": "База данных успешно создана",
+      "AlreadyCreated": "База данных уже существует"
+    },
+    "Validator": {
+      "TryAgain": "Попробуйте ещё раз: ",
+      "ValidatePasswordStrength": {
+        "MediumComplexity": "Ваш пароль средней сложности.",
+        "HighComplexity": "Ваш пароль высокой сложности.",
+        "WeakPassword": "Ваш пароль слишком слабый. Попробуйте ещё раз.",
+        "PasswordCondition": "Пароль должен содержать от 8 до 20 символов. Попробуйте ещё раз: ",
+        "SuccessfulRegistration": "Регистрация прошла успешно!"
+      },
+      "ValidateUsername": "Имя может содержать только буквы. Попробуйте ещё раз: ",
+      "ValidateService": "Сервис может содержать только буквы и пробелы. Попробуйте ещё раз: "
+    },
+    "Generator": {
+      "ValidateComplexity": "Уровень сложности должен быть один из: ",
+      "ValidateLength": "Длина пароля должна быть между "
+    },
+    "ChooseOption": "Выберите опцию: "
+  }
+}
