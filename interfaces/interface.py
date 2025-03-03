@@ -1,51 +1,52 @@
 from db.storage import PasswordManager, Session
 from core.generator import PasswordGenerator
 from helpers.validator import InputValidation as Validator
-
+from translation import Language
+from i18n import t
 
 class Choices:
     _min_length = 8
     _max_length = 32
     __interface_borders = {1: "-", 2: "@", 3: "."}
     __passw_interface = {
-        1: "Показать пароль",
-        2: "Показать все пароли"
+        1: t("MainInterface.ShowPasswordsOptions.OnePass"),
+        2: t("MainInterface.ShowPasswordsOptions.AllPass")
     }
 
     @classmethod
     def generate_passw_interface(cls):
 
         length = Validator.validate_number_input(
-            input("Введите длину пароля (8-64): "),
+            input(t("MainInterface.GeneratePassword.InputPasswordLength")),
             # min_val=8,
             # max_val=64
         )
 
         complexity = Validator.validate_number_input(
-            input("Выберите сложность (1-3):\n1. Базовый\n2. Продвинутый\n3. Максимальный\n"),
+            input("MainInterface.GeneratePassword.InputPasswordComplexity"),
             # min_val=1,
             # max_val=3
         )
 
         try:
             password = PasswordGenerator.generate(length, complexity)
-            print(f"Сгенерированный пароль: {password}")
+            print(t("MainInterface.GeneratePassword.GeneratedPassword"), password)
 
-            if Validator.validate_agreement(input("Сохранить пароль? (да/нет): ")):
-                service = Validator.validate_service(input("Введите название сервиса: "))
+            if Validator.validate_agreement(input(t("MainInterface.GeneratePassword.SavePasswordAgreement"))):
+                service = Validator.validate_service(input(t("MainInterface.GeneratePassword.ServiceInput")))
                 PasswordManager.save_password(service, password)
 
         except ValueError as e:
-            print(f"Ошибка генерации: {str(e)}")
+            print(t("MainInterface.GeneratePassword.GenerationFailed"), str(e))
 
         return ""
 
     @staticmethod
     def save_pass_interface():
-        service = Validator.validate_service(input("Введите название сервиса: \n"))
-        password = input('Введите пароль: \n')
+        service = Validator.validate_service(input(t("MainInterface.SavePassword.ServiceInput")))
+        password = input(t("MainInterface.SavePassword.EnterPassword"))
         PasswordManager.save_password(service, password)
-        print("Пароль успешно сохранен!")
+        print("MainInterface.SavePassword.PasswordSaveSuccess")
 
     @classmethod
     def show_passw_interface(cls):
@@ -53,38 +54,40 @@ class Choices:
         for key, value in cls.__passw_interface.items():
             print(f"{key}: {value}")
         print('')
-        _user_choice: int = Validator.validate_number_input(input('Выберите опцию: '))
+        _user_choice: int = Validator.validate_number_input(input(t("ChooseOption")))
         match _user_choice:
             case 1:
                 print("")
-                _user_service = Validator.validate_service(input('Название сервиса: '))
-                service, password = PasswordManager.get_password(_user_service)
-                print(f"Сервис: {service} -> Пароль: {password}")
+                _user_service = Validator.validate_service(input(t("MainInterface.ShowPasswordInterface.ServiceName")))
+                data = PasswordManager.get_password(_user_service)
+                for service_name, password in data:
+                    print(t("MainInterface.ShowPasswordInterface.ServiceOutput"), service_name, t("MainInterface.ShowPasswordInterface.PasswordOutput"), password, sep='')
             case 2:
-                pass_confirm = Validator.validate_password(input("Подтвердите действие используя мастер-пароль:\n"))
+                pass_confirm = Validator.validate_password(input(t("MainInterface.ShowPasswordInterface.ConfirmAction")))
                 if PasswordManager.check_password(pass_confirm):
                     data = PasswordManager.get_all_passwords()
                     if not data:
-                        print("Нет сохраненных паролей")
+                        print(t("MainInterface.ShowPasswordInterface.NoPasswordsFound"))
                         return ""
-                    print("\nСохраненные пароли:\n")
+                    print("MainInterface.ShowPasswordInterface.SavedPasswords")
                     for record in data:
                         pwd_id, service, password = record
-                        print(f"[ID: {pwd_id}] Сервис: {service} -> Пароль: {password}")
+                        print(t("MainInterface.ShowPasswordInterface.ShowID"), pwd_id, '] ', t("MainInterface.ShowPasswordInterface.ServiceOutput"), service,
+                              t("MainInterface.ShowPasswordInterface.PasswordOutput"), password, sep='')
                     print()
                     return ""
                 else:
-                    print("Неверный мастер-пароль!\n")
+                    print("MainInterface.ShowPasswordInterface.WrongMasterPassword")
             case _:
-                print("Неверный выбор")
+                print("MainInterface.ShowPasswordInterface.WrongOption")
 
 class UserInterface:
     __interface_list = {
-        1: "Сгенерировать пароль",
-        2: "Показать пароли",
-        3: "Сохранить пароль",
-        4: "Изменить оформление",
-        0: "Выйти"
+        1: t("MainInterface.MenuInterface.InterfaceOptions.GeneratePassword"),
+        2: t("MainInterface.MenuInterface.InterfaceOptions.ShowPasswords"),
+        3: t("MainInterface.MenuInterface.InterfaceOptions.SavePassword"),
+        4: t("MainInterface.MenuInterface.InterfaceOptions.ChangeDesign"),
+        0: t("MainInterface.MenuInterface.InterfaceOptions.Logout")
     }
 
     _interface_border = '*'
@@ -96,7 +99,7 @@ class UserInterface:
             print(f"{k} --> {v}")
         print(cls.borders())
 
-        choice = Validator.validate_number_input(input("Выберите опцию: "))
+        choice = Validator.validate_number_input(input(t("ChooseOption")))
 
         match choice:
             case 1:
@@ -106,12 +109,12 @@ class UserInterface:
             case 3:
                 Choices.save_pass_interface()
             case 4:
-                print("Функция в разработке\n")
+                print(t("MainInterface.MenuInterface.FunctionInDevelopment"))
             case 0:
                 Session.clear()
-                return "Вы вышли из системы\n"
+                return "MainInterface.MenuInterface.UserLogout"
             case _:
-                print("Неверный выбор")
+                print(t("MainInterface.MenuInterface.WrongOption"))
 
         return ""
 

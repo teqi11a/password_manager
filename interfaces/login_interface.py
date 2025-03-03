@@ -2,42 +2,34 @@ from helpers.validator import InputValidation as Validator
 from interfaces import interface
 from db.storage import AuthService, Session
 from core.generator import PasswordGenerator
-
+from translation import Language
+from i18n import t
 
 class Authorization:
     __user_auth = False
-    __menu = {
-        1: "Зарегистрироваться",
-        2: "Войти",
-        3: "Сменить пароль",
-        4: "Удалить учетную запись",
-        0: "Выйти"
-    }
-
 
     @staticmethod
     def register():
-        username = Validator.validate_username(input("Придумайте имя для вашей учетной записи:\n"))
-
-        gen_master_pass = input("Хотите сгенерировать мастер-пароль? (да/нет)(yes/no)\n")
+        username = Validator.validate_username(input(t("LoginInterface.Register.RegisterUsername")))
+        gen_master_pass = input(t("LoginIn.Register.RegisterPassword"))
         if Validator.validate_agreement(gen_master_pass):
             master_password = PasswordGenerator.generate(16, 2)
-            print("Ваш мастер-пароль --> ", master_password)
+            print(t("LoginInterface.Register.YourMasterPassword"), master_password)
         else:
             master_password = Validator.validate_password(
-                Validator.validate_password(input("Придумайте мастер-пароль:\n")))
+                Validator.validate_password(input(t("LoginInterface.Register.CreateMasterPassword"))))
             if AuthService.register(username, master_password):
-                print("Регистрация прошла успешно!")
+                print(t("LoginInterface.Register.SuccessfulRegister"))
 
     @staticmethod
     def login():
-        username = Validator.validate_username(input("Введите имя вашей учетной записи:\n"))
-        master_password = Validator.validate_password(input("Введите мастер-пароль:\n"))
+        username = Validator.validate_username(input(t("LoginInterface.Login.EnterName")))
+        master_password = Validator.validate_password(input(t("LoginInterface.Login.EnterMasterPassword")))
         if AuthService.login(username, master_password):
             Authorization.__user_auth = True
-            print("Авторизация успешна!\n")
+            print(t("LoginInterface.Login.SuccessfulAuthorization"))
         else:
-            print("Ошибка авторизации")
+            print(t("LoginInterface.Login.FailedAuthorization"))
 
     @staticmethod
     def change_password():
@@ -55,16 +47,43 @@ class Authorization:
         print("Функция в разработке")
 
     @classmethod
+    def get_menu(cls):
+        """Возвращает меню с актуальными переводами"""
+        return {
+            1: t("LoginInterface.LoginMenuOptions.Register"),
+            2: t("LoginInterface.LoginMenuOptions.Login"),
+            3: t("LoginInterface.LoginMenuOptions.ChangePassword"),
+            4: t("LoginInterface.LoginMenuOptions.DeleteAccount"),
+            5: t("LoginInterface.LoginMenuOptions.ChangeLanguage"),
+            0: t("LoginInterface.LoginMenuOptions.Exit")
+        }
+
+    @staticmethod
+    def change_language():
+        print(t("LoginInterface.ChangeLanguage.ChangeOption"))
+        user_lang = Validator.validate_number_input(input(""))
+        match user_lang:
+            case 1:
+                Language.setup_i18n(lang="ru")
+            case 2:
+                Language.setup_i18n(lang="en")
+            case _:
+                print(t("LoginInterface.ChangeLanguage.IncorrectLanguage"))
+        Language.reload_translations()
+
+    @classmethod
     def login_menu(cls):
         while True:
             if Session.is_authenticated():
                 return True
-            print("\nМеню авторизации:\n" + interface.UserInterface.borders())
-            for key, value in cls.__menu.items():
+            menu = cls.get_menu()
+            print(t("LoginInterface.LoginMenu.AuthorizationMenu"))
+            print(interface.UserInterface.borders())
+            for key, value in menu.items():
                 print(f"{key} --> {value}")
             print(interface.UserInterface.borders())
 
-            choice = Validator.validate_number_input(input("Выберите опцию: "))
+            choice = Validator.validate_number_input(input(t("ChooseOption")))
             match choice:
                 case 1:
                     cls.register()
@@ -74,7 +93,9 @@ class Authorization:
                     cls.change_password()
                 case 4:
                     cls.delete_account()
+                case 5:
+                    cls.change_language()
                 case 0:
-                    exit("До свидания!")
+                    exit(t("LoginInterface.LoginMenu.Exit"))
                 case _:
-                    print("Неверный выбор")
+                    print(t("LoginInterface.LoginMenu.WrongOption"))

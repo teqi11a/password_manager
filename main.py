@@ -1,6 +1,5 @@
 from interfaces import interface, login_interface
 
-
 def main():
     while True:
         if login_interface.Authorization.login_menu():

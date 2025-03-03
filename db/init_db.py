@@ -1,5 +1,6 @@
 import sqlite3
 from pathlib import Path
+from i18n import t
 
 
 def initialize_database():
@@ -56,9 +57,9 @@ def initialize_database():
             ''')
 
             conn.commit()
-            print("Database tables created successfully")
+            print(t("InitDB.Created"))
         else:
-            print("Database already initialized")
+            print(t("InitDB.AlreadyCreated"))
 
     except sqlite3.Error as e:
         print(f"Database error: {str(e)}")

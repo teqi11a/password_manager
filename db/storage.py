@@ -1,5 +1,4 @@
 import sqlite3
-
 from core import crypto
 from core.crypto import (
     hash_password,
@@ -19,7 +18,7 @@ class Session:
     _auth_flag = False
 
     @classmethod
-    def initialize(cls, user_id: int, username: str, fernet_key: bytes):
+    def initialize(cls, user_id: int, username: str, fernet_key: bytes | None):
         cls._current_user = {'id': user_id, 'username': username}
         cls._fernet_key = fernet_key
         cls._auth_flag = True  # Устанавливаем флаг при авторизации
@@ -44,10 +43,9 @@ class Session:
     def get_fernet_key(cls):
         return cls._fernet_key
 
-
 class AuthService:
     @staticmethod
-    def register(username: str, master_password: str):
+    def register(username: str, master_password: str) -> bool:
         try:
             kdf_salt, encrypted_key = generate_encrypted_key(master_password)
             hashed_password = hash_password(master_password)
@@ -93,16 +91,6 @@ class AuthService:
     def logout():
         log_activity("Выход")
         Session.clear()
-
-
-def log_activity(action: str):
-    if user_id := Session.get_user_id():
-        conn.execute('''
-            INSERT INTO activity_logs (user_id, action)
-            VALUES (?, ?)
-        ''', (user_id, action))
-        conn.commit()
-
 
 class PasswordManager:
 
@@ -157,15 +145,15 @@ class PasswordManager:
         log_activity(f"Обновление пароля ID {pwd_id}")
 
     @staticmethod
-    def get_password(service: str) -> tuple:
+    def get_password(service: str) -> list:
         if not (key := Session.get_fernet_key()):
             raise ValueError("Not authenticated")
 
-        row = conn.execute('''
+        rows = conn.execute('''
             SELECT passwords.service_name, encrypted_password FROM passwords
             WHERE user_id = ? AND service_name = ?
-        ''', (Session.get_user_id(), service)).fetchone()
-        return row[0], decrypt_password(row[1], key)
+        ''', (Session.get_user_id(), service)).fetchall()
+        return [(row[0], decrypt_password(row[1], key)) for row in rows]
 
     @staticmethod
     def get_all_passwords() -> list:
@@ -183,3 +171,11 @@ class PasswordManager:
             (row[0], row[1], decrypt_password(row[2], key))
             for row in rows
         ]
+
+def log_activity(action: str):
+    if user_id := Session.get_user_id():
+        conn.execute('''
+            INSERT INTO activity_logs (user_id, action)
+            VALUES (?, ?)
+        ''', (user_id, action))
+        conn.commit()
