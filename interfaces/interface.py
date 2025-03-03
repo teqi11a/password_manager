@@ -23,7 +23,7 @@ class Choices:
         )
 
         complexity = Validator.validate_number_input(
-            input("MainInterface.GeneratePassword.InputPasswordComplexity"),
+            input(t("MainInterface.GeneratePassword.InputPasswordComplexity")),
             # min_val=1,
             # max_val=3
         )
@@ -46,7 +46,7 @@ class Choices:
         service = Validator.validate_service(input(t("MainInterface.SavePassword.ServiceInput")))
         password = input(t("MainInterface.SavePassword.EnterPassword"))
         PasswordManager.save_password(service, password)
-        print("MainInterface.SavePassword.PasswordSaveSuccess")
+        print(t("MainInterface.SavePassword.PasswordSaveSuccess"))
 
     @classmethod
     def show_passw_interface(cls):
@@ -69,7 +69,7 @@ class Choices:
                     if not data:
                         print(t("MainInterface.ShowPasswordInterface.NoPasswordsFound"))
                         return ""
-                    print("MainInterface.ShowPasswordInterface.SavedPasswords")
+                    print(t("MainInterface.ShowPasswordInterface.SavedPasswords"))
                     for record in data:
                         pwd_id, service, password = record
                         print(t("MainInterface.ShowPasswordInterface.ShowID"), pwd_id, '] ', t("MainInterface.ShowPasswordInterface.ServiceOutput"), service,

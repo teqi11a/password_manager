@@ -76,7 +76,8 @@
     },
     "InitDB": {
       "Created": "База данных успешно создана",
-      "AlreadyCreated": "База данных уже существует"
+      "AlreadyCreated": "База данных уже существует",
+      "DatabaseError": "Ошибка базы данных : "
     },
     "Validator": {
       "TryAgain": "Попробуйте ещё раз: ",
@@ -92,7 +93,28 @@
     },
     "Generator": {
       "ValidateComplexity": "Уровень сложности должен быть один из: ",
-      "ValidateLength": "Длина пароля должна быть между "
+      "ValidateLength": "Длина пароля должна быть :\n"
+    },
+    "Storage": {
+      "Register": {
+        "UserExists": "Пользователь с таким именем уже существует"
+      },
+      "Login": {
+        "FailedLogin": "Ошибка авторизации: "
+      },
+      "Logging": {
+        "Registration": "Регистрация",
+        "Login": "Авторизация",
+        "Logout": "Выход",
+        "SavePassword": "Сохранение пароля"
+      },
+      "SavePassword": {
+        "ConfirmSave": "Всё равно сохранить? (да/нет): ",
+        "ForService": "Внимание! Для сервиса",
+        "AlreadyExists": "уже существует",
+        "Passwords": "паролей"
+      },
+      "LoggedOut": "Not authenticated"
     },
     "ChooseOption": "Выберите опцию: "
   }

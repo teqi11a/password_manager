@@ -11,7 +11,7 @@ class Authorization:
     @staticmethod
     def register():
         username = Validator.validate_username(input(t("LoginInterface.Register.RegisterUsername")))
-        gen_master_pass = input(t("LoginIn.Register.RegisterPassword"))
+        gen_master_pass = input(t("LoginInterface.Register.RegisterPassword"))
         if Validator.validate_agreement(gen_master_pass):
             master_password = PasswordGenerator.generate(16, 2)
             print(t("LoginInterface.Register.YourMasterPassword"), master_password)

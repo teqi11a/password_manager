@@ -54,7 +54,7 @@ class PasswordGenerator:
 
     def _validate_length(self, length: int) -> int:
         if not (self.MIN_LENGTH <= length <= self.MAX_LENGTH):
-            raise ValueError(t("Generator.ValidateLength"), self.MIN_LENGTH, "и", self.MAX_LENGTH)
+            raise ValueError(t("Generator.ValidateLength"), self.MIN_LENGTH, "<= password <=", self.MAX_LENGTH)
         return length
 
     def _validate_complexity(self, complexity: int) -> int:

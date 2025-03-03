@@ -62,7 +62,7 @@ def initialize_database():
             print(t("InitDB.AlreadyCreated"))
 
     except sqlite3.Error as e:
-        print(f"Database error: {str(e)}")
+        print(t("InitDB.DatabaseError"), str(e))
         if conn:
             conn.rollback()
     finally:

@@ -1,5 +1,7 @@
 import sqlite3
 from core import crypto
+from translation import Language
+from i18n import t
 from core.crypto import (
     hash_password,
     check_password,
@@ -57,12 +59,12 @@ class AuthService:
                     VALUES (?, ?, ?, ?)
                 ''', (username, hashed_password, kdf_salt, encrypted_key))
 
-                Session.initialize(cur.lastrowid, username, None)
-                log_activity("Регистрация")
+                Session.initialize(cur.lastrowid, username, encrypted_key)
+                log_activity(t("Storage.Logging.Registration"))
 
             return True
         except sqlite3.IntegrityError:
-            print("Пользователь с таким именем уже существует")
+            print(t("Storage.Register.UserExists"))
             return False
 
     @staticmethod
@@ -80,16 +82,16 @@ class AuthService:
             fernet_key = decrypt_user_key(master_password, kdf_salt, encrypted_key)
 
             Session.initialize(user_id, username, fernet_key)
-            log_activity("Авторизация")
+            log_activity(t("Storage.Logging.Login"))
             return True
 
         except Exception as e:
-            print(f"Ошибка авторизации: {str(e)}")
+            print(t("Storage.Login.FailedLogin"), {str(e)})
             return False
 
     @staticmethod
     def logout():
-        log_activity("Выход")
+        log_activity(t("Storage.Logging.Logout"))
         Session.clear()
 
 class PasswordManager:
@@ -101,7 +103,7 @@ class PasswordManager:
     @staticmethod
     def save_password(service: str, password: str, note: str = ""):
         if not (key := Session.get_fernet_key()):
-            raise ValueError("Not authenticated")
+            raise ValueError(t("Storage.LoggedOut"))
 
         encrypted = encrypt_password(password, key)
 
@@ -112,8 +114,8 @@ class PasswordManager:
         ''', (Session.get_user_id(), service)).fetchall()
 
         if existing:
-            print(f"Внимание! Для сервиса '{service}' уже существует {len(existing)} паролей")
-            confirm = input("Всё равно сохранить? (да/нет): ")
+            print(t("Storage.SavePassword.ForService"), f"'{service}'", t("Storage.SavePassword.AlreadyExists") , len(existing), t("Storage.SavePassword.Passwords"))
+            confirm = input(t("Storage.SavePassword.ConfirmSave"))
             if confirm.lower() not in ['y', 'да', 'yes']:
                 return
 
@@ -122,7 +124,7 @@ class PasswordManager:
             VALUES (?, ?, ?)
         ''', (Session.get_user_id(), service, encrypted))
         conn.commit()
-        log_activity(f"Сохранение пароля для {service}")
+        log_activity(t("Storage.Logging.SavePassword"))
 
     @staticmethod
     def delete_password(pwd_id: int):
@@ -147,7 +149,7 @@ class PasswordManager:
     @staticmethod
     def get_password(service: str) -> list:
         if not (key := Session.get_fernet_key()):
-            raise ValueError("Not authenticated")
+            raise ValueError(t("Storage.LoggedOut"))
 
         rows = conn.execute('''
             SELECT passwords.service_name, encrypted_password FROM passwords
@@ -158,7 +160,7 @@ class PasswordManager:
     @staticmethod
     def get_all_passwords() -> list:
         if not (key := Session.get_fernet_key()):
-            raise ValueError("Not authenticated")
+            raise ValueError(t("Storage.LoggedOut"))
 
         rows = conn.execute('''
             SELECT id, service_name, encrypted_password 
