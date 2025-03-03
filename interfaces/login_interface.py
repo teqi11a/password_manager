@@ -15,6 +15,8 @@ class Authorization:
         if Validator.validate_agreement(gen_master_pass):
             master_password = PasswordGenerator.generate(16, 2)
             print(t("LoginInterface.Register.YourMasterPassword"), master_password)
+            if AuthService.register(username, master_password):
+                print(t("LoginInterface.Register.SuccessfulRegister"))
         else:
             master_password = Validator.validate_password(
                 Validator.validate_password(input(t("LoginInterface.Register.CreateMasterPassword"))))
