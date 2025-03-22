@@ -1,6 +1,7 @@
 import secrets
 from string import ascii_uppercase, ascii_lowercase, digits
-
+from i18n import t
+from translation import Language
 
 class PasswordGenerator:
 
@@ -53,14 +54,10 @@ class PasswordGenerator:
 
     def _validate_length(self, length: int) -> int:
         if not (self.MIN_LENGTH <= length <= self.MAX_LENGTH):
-            raise ValueError(
-                f"Длина пароля должна быть между {self.MIN_LENGTH} и {self.MAX_LENGTH}"
-            )
+            raise ValueError(t("Generator.ValidateLength"), self.MIN_LENGTH, "<= password <=", self.MAX_LENGTH)
         return length
 
     def _validate_complexity(self, complexity: int) -> int:
         if complexity not in self.COMPLEXITY_LEVELS:
-            raise ValueError(
-                f"Уровень сложности должен быть один из: {list(self.COMPLEXITY_LEVELS.keys())}"
-            )
+            raise ValueError(t("Generator.ValidateComplexity"), list(self.COMPLEXITY_LEVELS.keys()))
         return complexity

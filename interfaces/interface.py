@@ -1,120 +1,128 @@
+import click
 from db.storage import PasswordManager, Session
 from core.generator import PasswordGenerator
-from helpers.validator import InputValidation as Validator
-
+from interfaces.paginate import show_passwords_manual_pagination, show_password_manual_pagination
+from translation import Language
+from i18n import t
 
 class Choices:
     _min_length = 8
     _max_length = 32
     __interface_borders = {1: "-", 2: "@", 3: "."}
     __passw_interface = {
-        1: "Показать пароль",
-        2: "Показать все пароли"
+        1: t("MainInterface.ShowPasswordsOptions.OnePass"),
+        2: t("MainInterface.ShowPasswordsOptions.AllPass")
     }
 
     @classmethod
     def generate_passw_interface(cls):
-
-        length = Validator.validate_number_input(
-            input("Введите длину пароля (8-64): "),
-            # min_val=8,
-            # max_val=64
+        """Интерфейс генерации пароля."""
+        length = click.prompt(
+            t("MainInterface.GeneratePassword.InputPasswordLength"),
+            type=int,
+            default=16,
+            show_default=True
         )
-
-        complexity = Validator.validate_number_input(
-            input("Выберите сложность (1-3):\n1. Базовый\n2. Продвинутый\n3. Максимальный\n"),
-            # min_val=1,
-            # max_val=3
+        complexity = click.prompt(
+            t("MainInterface.GeneratePassword.InputPasswordComplexity"),
+            type=int,
+            default=2,
+            show_default=True
         )
 
         try:
             password = PasswordGenerator.generate(length, complexity)
-            print(f"Сгенерированный пароль: {password}")
+            click.echo(t("MainInterface.GeneratePassword.GeneratedPassword") + click.style(password, fg="green"))
 
-            if Validator.validate_agreement(input("Сохранить пароль? (да/нет): ")):
-                service = Validator.validate_service(input("Введите название сервиса: "))
-                PasswordManager.save_password(service, password)
+            if click.confirm(t("MainInterface.GeneratePassword.SavePasswordAgreement")):
+                service = click.prompt(t("MainInterface.GeneratePassword.ServiceInput"), type=str)
+                if PasswordManager.save_password(service, password):
+                    click.secho(t("MainInterface.SavePassword.PasswordSaveSuccess"), fg="green")
+                else:
+                    click.secho(t("MainInterface.SavePassword.PasswordSaveRejected"), fg="red")
 
         except ValueError as e:
-            print(f"Ошибка генерации: {str(e)}")
-
-        return ""
+            click.echo(t("MainInterface.GeneratePassword.GenerationFailed") + click.style(str(e), fg="red"))
 
     @staticmethod
     def save_pass_interface():
-        service = Validator.validate_service(input("Введите название сервиса: \n"))
-        password = input('Введите пароль: \n')
-        PasswordManager.save_password(service, password)
-        print("Пароль успешно сохранен!")
+        """Интерфейс сохранения пароля."""
+        service = click.prompt(t("MainInterface.SavePassword.ServiceInput"), type=str)
+        password = click.prompt(t("MainInterface.SavePassword.EnterPassword"), hide_input=True)
+        if PasswordManager.save_password(service, password):
+            click.secho(t("MainInterface.SavePassword.PasswordSaveSuccess"), fg="green")
+        else:
+            click.secho(t("MainInterface.SavePassword.PasswordSaveRejected"), fg="red")
 
     @classmethod
     def show_passw_interface(cls):
-        print('')
+        """Интерфейс отображения паролей."""
+        click.echo("")
         for key, value in cls.__passw_interface.items():
-            print(f"{key}: {value}")
-        print('')
-        _user_choice: int = Validator.validate_number_input(input('Выберите опцию: '))
-        match _user_choice:
+            click.echo(f"{click.style(str(key), fg='yellow')}: {value}")
+        click.echo("")
+
+        user_choice = click.prompt(t("ChooseOption"), type=int)
+        match user_choice:
             case 1:
-                print("")
-                _user_service = Validator.validate_service(input('Название сервиса: '))
-                service, password = PasswordManager.get_password(_user_service)
-                print(f"Сервис: {service} -> Пароль: {password}")
+                show_password_manual_pagination()
+                click.clear()
             case 2:
-                pass_confirm = Validator.validate_password(input("Подтвердите действие используя мастер-пароль:\n"))
+                pass_confirm = click.prompt(
+                    t("MainInterface.ShowPasswordInterface.ConfirmAction"),
+                    hide_input=True
+                )
                 if PasswordManager.check_password(pass_confirm):
-                    data = PasswordManager.get_all_passwords()
-                    if not data:
-                        print("Нет сохраненных паролей")
-                        return ""
-                    print("\nСохраненные пароли:\n")
-                    for record in data:
-                        pwd_id, service, password = record
-                        print(f"[ID: {pwd_id}] Сервис: {service} -> Пароль: {password}")
-                    print()
-                    return ""
+                    click.clear()
+                    show_passwords_manual_pagination()
+                    click.clear()
                 else:
-                    print("Неверный мастер-пароль!\n")
+                    click.secho(t("MainInterface.ShowPasswordInterface.WrongMasterPassword"), fg="red")
             case _:
-                print("Неверный выбор")
+                click.secho(t("MainInterface.ShowPasswordInterface.WrongOption"), fg="red")
 
 class UserInterface:
     __interface_list = {
-        1: "Сгенерировать пароль",
-        2: "Показать пароли",
-        3: "Сохранить пароль",
-        4: "Изменить оформление",
-        0: "Выйти"
+        1: t("MainInterface.MenuInterface.InterfaceOptions.GeneratePassword"),
+        2: t("MainInterface.MenuInterface.InterfaceOptions.ShowPasswords"),
+        3: t("MainInterface.MenuInterface.InterfaceOptions.SavePassword"),
+        4: t("MainInterface.MenuInterface.InterfaceOptions.ChangeDesign"),
+        0: t("MainInterface.MenuInterface.InterfaceOptions.Logout")
     }
-
-    _interface_border = '*'
 
     @classmethod
     def menu(cls):
-        print(cls.borders())
-        for k, v in cls.__interface_list.items():
-            print(f"{k} --> {v}")
-        print(cls.borders())
+        """Главное меню интерфейса."""
+        click.clear()
+        while True:
 
-        choice = Validator.validate_number_input(input("Выберите опцию: "))
+            click.secho("=" * 50, fg="blue")
+            click.secho(t("MainInterface.MenuInterface.Title"), fg="blue", bold=True)
+            click.secho("=" * 50, fg="blue")
 
-        match choice:
-            case 1:
-                Choices.generate_passw_interface()
-            case 2:
-                Choices.show_passw_interface()
-            case 3:
-                Choices.save_pass_interface()
-            case 4:
-                print("Функция в разработке\n")
-            case 0:
-                Session.clear()
-                return "Вы вышли из системы\n"
-            case _:
-                print("Неверный выбор")
 
-        return ""
+            for k, v in cls.__interface_list.items():
+                click.echo(f"{click.style(str(k), fg='yellow')} --> {v}")
 
-    @classmethod
-    def borders(cls):
-        return cls._interface_border * 50
+            click.secho("=" * 50, fg="blue")
+
+
+            choice = click.prompt(t("ChooseOption"), type=int)
+            match choice:
+                case 1:
+                    Choices.generate_passw_interface()
+                case 2:
+                    Choices.show_passw_interface()
+                case 3:
+                    Choices.save_pass_interface()
+                case 4:
+                    click.secho(t("MainInterface.MenuInterface.FunctionInDevelopment"), fg="yellow")
+                case 0:
+                    Session.clear()
+                    click.secho(t("MainInterface.MenuInterface.UserLogout"), fg="red")
+                    return
+                case _:
+                    click.secho(t("MainInterface.MenuInterface.WrongOption"), fg="red")
+
+if __name__ == "__main__":
+    UserInterface.menu()

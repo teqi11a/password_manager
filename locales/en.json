@@ -1,0 +1,24 @@
+{
+  "en": {
+    "Database": {
+      "Created": "Database tables created successfully",
+      "AlreadyCreated": "Database already initialized"
+    },
+    "LoginMenu": {
+      "Register": "Register",
+      "Login": "Login",
+      "ChangePassword": "Change password",
+      "DeleteAccount": "Delete account",
+      "ChangeLanguage": "Change interface language",
+      "Exit": "Exit"
+    },
+    "ShowPasswords": {
+      "Menu": "Show passwords",
+      "OnePass": "Show password",
+      "AllPass": "Show all passwords"
+    },
+    "Login": {
+      "Name": "Enter your username\n"
+    }
+  }
+}
