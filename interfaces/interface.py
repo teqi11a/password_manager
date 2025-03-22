@@ -95,18 +95,18 @@ class UserInterface:
         """Главное меню интерфейса."""
         click.clear()
         while True:
-            # Вывод рамки и заголовка
+
             click.secho("=" * 50, fg="blue")
             click.secho(t("MainInterface.MenuInterface.Title"), fg="blue", bold=True)
             click.secho("=" * 50, fg="blue")
 
-            # Вывод пунктов меню
+
             for k, v in cls.__interface_list.items():
                 click.echo(f"{click.style(str(k), fg='yellow')} --> {v}")
 
             click.secho("=" * 50, fg="blue")
 
-            # Выбор пользователя
+
             choice = click.prompt(t("ChooseOption"), type=int)
             match choice:
                 case 1:
