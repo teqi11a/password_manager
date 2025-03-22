@@ -1,5 +1,5 @@
+import click
 from helpers.validator import InputValidation as Validator
-from interfaces import interface
 from db.storage import AuthService, Session
 from core.generator import PasswordGenerator
 from translation import Language
@@ -10,47 +10,74 @@ class Authorization:
 
     @staticmethod
     def register():
-        username = Validator.validate_username(input(t("LoginInterface.Register.RegisterUsername")))
-        gen_master_pass = input(t("LoginInterface.Register.RegisterPassword"))
-        if Validator.validate_agreement(gen_master_pass):
+        """Регистрация нового пользователя."""
+        username = click.prompt(t("LoginInterface.Register.RegisterUsername"), type=str)
+        username = Validator.validate_username(username)
+
+        gen_master_pass = click.confirm(t("LoginInterface.Register.RegisterPassword"), default=True)
+        if gen_master_pass:
             master_password = PasswordGenerator.generate(16, 2)
-            print(t("LoginInterface.Register.YourMasterPassword"), master_password)
-            if AuthService.register(username, master_password):
-                print(t("LoginInterface.Register.SuccessfulRegister"))
+            click.echo(t("LoginInterface.Register.YourMasterPassword") + click.style(master_password, fg="green"))
         else:
-            master_password = Validator.validate_password(
-                Validator.validate_password(input(t("LoginInterface.Register.CreateMasterPassword"))))
-            if AuthService.register(username, master_password):
-                print(t("LoginInterface.Register.SuccessfulRegister"))
+            master_password = click.prompt(
+                t("LoginInterface.Register.CreateMasterPassword"),
+                hide_input=True,
+                confirmation_prompt=True
+            )
+            master_password = Validator.validate_password(master_password)
+
+        if AuthService.register(username, master_password):
+            click.secho(t("LoginInterface.Register.SuccessfulRegister"), fg="green")
 
     @staticmethod
     def login():
-        username = Validator.validate_username(input(t("LoginInterface.Login.EnterName")))
-        master_password = Validator.validate_password(input(t("LoginInterface.Login.EnterMasterPassword")))
+        """Авторизация пользователя."""
+        username = click.prompt(t("LoginInterface.Login.EnterName"), type=str)
+        username = Validator.validate_username(username)
+
+        master_password = click.prompt(
+            t("LoginInterface.Login.EnterMasterPassword"),
+            hide_input=True
+        )
+        master_password = Validator.validate_password(master_password)
+
         if AuthService.login(username, master_password):
             Authorization.__user_auth = True
-            print(t("LoginInterface.Login.SuccessfulAuthorization"))
+            click.clear()
+            click.secho(t("LoginInterface.Login.SuccessfulAuthorization"), fg="green")
         else:
-            print(t("LoginInterface.Login.FailedAuthorization"))
+            click.clear()
+            click.secho(t("LoginInterface.Login.FailedAuthorization"), fg="red")
 
     @staticmethod
     def change_password():
-        # Реализация смены пароля требует дополнительных методов в AuthService
-        print("Функция в разработке")
+        """Смена пароля."""
+        click.secho("Функция в разработке", fg="yellow")
 
     @staticmethod
     def delete_account():
-        username = Validator.validate_username(input("Введите имя вашей учетной записи:\n"))
-        master_password = Validator.validate_password(input("Введите мастер-пароль:\n"))
-        confirmation = Validator.validate_agreement(
-            input("Вы уверены, что хотите удалить учетную запись? (да/нет)\n"))
+        """Удаление учетной записи."""
+        username = click.prompt("Введите имя вашей учетной записи", type=str)
+        username = Validator.validate_username(username)
 
-        # Требуется реализация метода delete_user в AuthService
-        print("Функция в разработке")
+        master_password = click.prompt("Введите мастер-пароль", hide_input=True)
+        master_password = Validator.validate_password(master_password)
+
+        confirmation = click.confirm("Вы уверены, что хотите удалить учетную запись?", default=False)
+        if confirmation:
+            click.secho("Функция в разработке", fg="yellow")
+
+    @staticmethod
+    def change_language():
+        """Смена языка интерфейса."""
+        lang = click.prompt("Выберите язык (ru/en)", type=click.Choice(["ru", "en"]))
+        Language.setup_i18n(lang=lang)
+        Language.reload_translations()
+        click.secho(t("LoginInterface.ChangeLanguage.ChangeOption"), fg="blue")
 
     @classmethod
     def get_menu(cls):
-        """Возвращает меню с актуальными переводами"""
+        """Возвращает меню с актуальными переводами."""
         return {
             1: t("LoginInterface.LoginMenuOptions.Register"),
             2: t("LoginInterface.LoginMenuOptions.Login"),
@@ -60,32 +87,27 @@ class Authorization:
             0: t("LoginInterface.LoginMenuOptions.Exit")
         }
 
-    @staticmethod
-    def change_language():
-        print(t("LoginInterface.ChangeLanguage.ChangeOption"))
-        user_lang = Validator.validate_number_input(input(""))
-        match user_lang:
-            case 1:
-                Language.setup_i18n(lang="ru")
-            case 2:
-                Language.setup_i18n(lang="en")
-            case _:
-                print(t("LoginInterface.ChangeLanguage.IncorrectLanguage"))
-        Language.reload_translations()
-
     @classmethod
     def login_menu(cls):
+        """Главное меню авторизации."""
         while True:
             if Session.is_authenticated():
                 return True
-            menu = cls.get_menu()
-            print(t("LoginInterface.LoginMenu.AuthorizationMenu"))
-            print(interface.UserInterface.borders())
-            for key, value in menu.items():
-                print(f"{key} --> {value}")
-            print(interface.UserInterface.borders())
 
-            choice = Validator.validate_number_input(input(t("ChooseOption")))
+            menu = cls.get_menu()
+            # Верхняя рамка
+            click.secho("=" * 50, fg="blue")
+            click.secho(t("LoginInterface.LoginMenu.AuthorizationMenu"), fg="blue", bold=True)
+            click.secho("=" * 50, fg="blue")
+
+            # Вывод пунктов меню
+            for key, value in menu.items():
+                click.echo(f"{click.style(str(key), fg='yellow')} --> {value}")
+
+            # Нижняя рамка
+            click.secho("=" * 50, fg="blue")
+
+            choice = click.prompt(t("ChooseOption"), type=int)
             match choice:
                 case 1:
                     cls.register()
@@ -98,6 +120,9 @@ class Authorization:
                 case 5:
                     cls.change_language()
                 case 0:
-                    exit(t("LoginInterface.LoginMenu.Exit"))
+                    exit(click.style(t("LoginInterface.LoginMenu.Exit"), fg="red"))
                 case _:
-                    print(t("LoginInterface.LoginMenu.WrongOption"))
+                    click.secho(t("LoginInterface.LoginMenu.WrongOption"), fg="red")
+
+if __name__ == "__main__":
+    Authorization.login_menu()

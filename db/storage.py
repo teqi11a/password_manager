@@ -178,7 +178,7 @@ class PasswordManager:
         return crypto.check_password(password, hashed_password)
 
     @staticmethod
-    def save_password(service: str, password: str, note: str = ""):
+    def save_password(service: str, password: str, note: str = "") -> bool:
         """
         Сохраняет пароль для указанного сервиса.
 
@@ -205,14 +205,15 @@ class PasswordManager:
             print(t("Storage.SavePassword.ForService"), f"'{service}'", t("Storage.SavePassword.AlreadyExists") , len(existing), t("Storage.SavePassword.Passwords"))
             confirm = input(t("Storage.SavePassword.ConfirmSave"))
             if not validator.InputValidation.validate_agreement(confirm):
-                return
+                return False
 
         conn.execute('''
             INSERT INTO passwords (user_id, service_name, encrypted_password)
             VALUES (?, ?, ?)
         ''', (Session.get_user_id(), service, encrypted))
         conn.commit()
-        log_activity(t("Storage.Logging.SavePassword"))
+        log_activity(t("Storage.Logging.SavePassword") +  service)
+        return True
 
     @staticmethod
     def delete_password(pwd_id: int):
