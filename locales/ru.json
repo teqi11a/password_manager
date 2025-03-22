@@ -2,7 +2,7 @@
   "ru": {
     "LoginInterface": {
       "LoginMenu": {
-        "AuthorizationMenu": "\nМеню авторизации:",
+        "AuthorizationMenu": "Меню авторизации:",
         "Exit": "До свидания!",
         "WrongOption": "Неверный выбор"
       },
@@ -15,17 +15,17 @@
         "Exit": "Выйти"
       },
       "Register": {
-        "RegisterUsername": "Придумайте имя для вашей учетной записи:\n",
-        "RegisterPassword": "Хотите сгенерировать мастер-пароль? (да/нет)\n",
+        "RegisterUsername": "Придумайте имя для вашей учетной записи",
+        "RegisterPassword": "Хотите сгенерировать мастер-пароль?",
         "YourMasterPassword": "Ваш мастер-пароль --> ",
         "CreateMasterPassword": "Придумайте мастер-пароль:\n",
         "SuccessfulRegister": "Регистрация прошла успешно!"
       },
       "Login": {
-        "EnterName": "Введите имя вашей учетной записи\n",
-        "EnterMasterPassword": "Введите мастер-пароль:\n",
+        "EnterName": "Введите имя вашей учетной записи",
+        "EnterMasterPassword": "Введите мастер-пароль",
         "SuccessfulAuthorization": "Авторизация успешна!\n",
-        "FailedAuthorization": "Ошибка авторизации\n"
+        "FailedAuthorization": "\nОшибка авторизации\n"
       },
       "ChangeLanguage":{
         "ChangeOption": "1: Русский\n2: English\n",
@@ -48,7 +48,8 @@
       "SavePassword": {
         "ServiceInput": "Введите название сервиса: \n",
         "EnterPassword": "Введите пароль: \n",
-        "PasswordSaveSuccess": "Пароль успешно сохранен!"
+        "PasswordSaveSuccess": "Пароль успешно сохранен!",
+        "PasswordSaveRejected": "Вы отменили сохранение пароля"
       },
       "ShowPasswordInterface": {
         "ServiceName": "Название сервиса: ",
@@ -69,6 +70,7 @@
           "ChangeDesign": "Изменить оформление",
           "Logout": "Выйти"
         },
+        "Title": "Основное меню",
         "FunctionInDevelopment": "Функция в разработке\n",
         "UserLogout": "Вы вышли из системы\n",
         "WrongOption": "Неверный выбор"
@@ -116,6 +118,6 @@
       },
       "LoggedOut": "Not authenticated"
     },
-    "ChooseOption": "Выберите опцию: "
+    "ChooseOption": "Выберите опцию"
   }
 }
