@@ -36,9 +36,7 @@ pip install -r requirements.txt
 Перед первым запуском необходимо создать структуру базы данных. Для этого выполните:
 
 ```bash
-cd db
-python init_db.py
-cd ..
+python db/init_db.py
 ```
 
 ## Запуск программы
