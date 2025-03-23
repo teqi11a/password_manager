@@ -21,25 +21,28 @@ class Choices:
             t("MainInterface.GeneratePassword.InputPasswordLength"),
             type=int,
             default=16,
-            show_default=True
+            show_default=False
         )
         complexity = click.prompt(
             t("MainInterface.GeneratePassword.InputPasswordComplexity"),
             type=int,
             default=2,
-            show_default=True
+            show_default=False,
+            prompt_suffix='\n' + t("ChooseOption") + ' :'
         )
 
         try:
             password = PasswordGenerator.generate(length, complexity)
             click.echo(t("MainInterface.GeneratePassword.GeneratedPassword") + click.style(password, fg="green"))
 
-            if click.confirm(t("MainInterface.GeneratePassword.SavePasswordAgreement")):
+            if click.confirm(t("MainInterface.GeneratePassword.SavePasswordAgreement"), default=True):
                 service = click.prompt(t("MainInterface.GeneratePassword.ServiceInput"), type=str)
                 if PasswordManager.save_password(service, password):
                     click.secho(t("MainInterface.SavePassword.PasswordSaveSuccess"), fg="green")
                 else:
                     click.secho(t("MainInterface.SavePassword.PasswordSaveRejected"), fg="red")
+            else:
+                click.secho(t("MainInterface.SavePassword.PasswordSaveRejected"), fg="red")
 
         except ValueError as e:
             click.echo(t("MainInterface.GeneratePassword.GenerationFailed") + click.style(str(e), fg="red"))
@@ -82,13 +85,16 @@ class Choices:
                 click.secho(t("MainInterface.ShowPasswordInterface.WrongOption"), fg="red")
 
 class UserInterface:
-    __interface_list = {
-        1: t("MainInterface.MenuInterface.InterfaceOptions.GeneratePassword"),
-        2: t("MainInterface.MenuInterface.InterfaceOptions.ShowPasswords"),
-        3: t("MainInterface.MenuInterface.InterfaceOptions.SavePassword"),
-        4: t("MainInterface.MenuInterface.InterfaceOptions.ChangeDesign"),
-        0: t("MainInterface.MenuInterface.InterfaceOptions.Logout")
-    }
+    @classmethod
+    def get_interface_list(cls):
+        """Возвращает актуальные опции меню."""
+        return {
+            1: t("MainInterface.MenuInterface.InterfaceOptions.GeneratePassword"),
+            2: t("MainInterface.MenuInterface.InterfaceOptions.ShowPasswords"),
+            3: t("MainInterface.MenuInterface.InterfaceOptions.SavePassword"),
+            4: t("MainInterface.MenuInterface.InterfaceOptions.ChangeDesign"),
+            0: t("MainInterface.MenuInterface.InterfaceOptions.Logout")
+        }
 
     @classmethod
     def menu(cls):
@@ -101,7 +107,7 @@ class UserInterface:
             click.secho("=" * 50, fg="blue")
 
 
-            for k, v in cls.__interface_list.items():
+            for k, v in cls.get_interface_list().items():
                 click.echo(f"{click.style(str(k), fg='yellow')} --> {v}")
 
             click.secho("=" * 50, fg="blue")

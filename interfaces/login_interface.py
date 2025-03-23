@@ -70,10 +70,9 @@ class Authorization:
     @staticmethod
     def change_language():
         """Смена языка интерфейса."""
-        lang = click.prompt("Выберите язык (ru/en)", type=click.Choice(["ru", "en"]))
+        lang = click.prompt(t("LoginInterface.ChangeLanguage.ChangeOption"), type=click.Choice(["ru", "en"]))
         Language.setup_i18n(lang=lang)
         Language.reload_translations()
-        click.secho(t("LoginInterface.ChangeLanguage.ChangeOption"), fg="blue")
 
     @classmethod
     def get_menu(cls):

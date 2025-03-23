@@ -1,24 +1,123 @@
 {
   "en": {
-    "Database": {
-      "Created": "Database tables created successfully",
-      "AlreadyCreated": "Database already initialized"
+    "LoginInterface": {
+      "LoginMenu": {
+        "AuthorizationMenu": "\t\tAuthorization Menu",
+        "Exit": "Goodbye!",
+        "WrongOption": "Invalid choice"
+      },
+      "LoginMenuOptions": {
+        "Register": "Register",
+        "Login": "Login",
+        "ChangePassword": "Change password",
+        "DeleteAccount": "Delete account",
+        "ChangeLanguage": "Change language",
+        "Exit": "Exit"
+      },
+      "Register": {
+        "RegisterUsername": "Choose a username for your account",
+        "RegisterPassword": "Do you want to generate a master password?",
+        "YourMasterPassword": "Your master password --> ",
+        "CreateMasterPassword": "Create a master password:\n",
+        "SuccessfulRegister": "Registration successful!"
+      },
+      "Login": {
+        "EnterName": "Enter your account username",
+        "EnterMasterPassword": "Enter your master password",
+        "SuccessfulAuthorization": "Authorization successful!\n",
+        "FailedAuthorization": "\nAuthorization failed\n"
+      },
+      "ChangeLanguage": {
+        "ChangeOption": "Choose Language",
+        "IncorrectLanguage": "Invalid language!"
+      }
     },
-    "LoginMenu": {
-      "Register": "Register",
-      "Login": "Login",
-      "ChangePassword": "Change password",
-      "DeleteAccount": "Delete account",
-      "ChangeLanguage": "Change interface language",
-      "Exit": "Exit"
+    "MainInterface": {
+      "ShowPasswordsOptions": {
+        "OnePass": "Show password",
+        "AllPass": "Show all passwords"
+      },
+      "GeneratePassword": {
+        "InputPasswordLength": "Enter password length (8-64)",
+        "InputPasswordComplexity": "Choose complexity (1-3):\n1. Basic\n2. Advanced\n3. Maximum",
+        "GeneratedPassword": "Generated password: ",
+        "SavePasswordAgreement": "Save password?",
+        "ServiceInput": "Enter service name: ",
+        "GenerationFailed": "Generation error: "
+      },
+      "SavePassword": {
+        "ServiceInput": "Enter service name: \n",
+        "EnterPassword": "Enter password: \n",
+        "PasswordSaveSuccess": "Password saved successfully!",
+        "PasswordSaveRejected": "Password save canceled"
+      },
+      "ShowPasswordInterface": {
+        "ServiceName": "Service name",
+        "ServiceOutput": "Service: ",
+        "PasswordOutput": " -> Password: ",
+        "ConfirmAction": "Confirm action using master password:\n",
+        "NoPasswordsFound": "No saved passwords",
+        "SavedPasswords": "\nSaved passwords:\n",
+        "ShowID": "[ID: ",
+        "WrongMasterPassword": "Wrong master password!\n",
+        "WrongOption": "Invalid choice"
+      },
+      "MenuInterface": {
+        "InterfaceOptions": {
+          "GeneratePassword": "Generate password",
+          "ShowPasswords": "Show passwords",
+          "SavePassword": "Save password",
+          "ChangeDesign": "Change design",
+          "Logout": "Logout"
+        },
+        "Title": "Main Menu",
+        "FunctionInDevelopment": "Function in development\n",
+        "UserLogout": "You have logged out\n",
+        "WrongOption": "Invalid choice"
+      }
     },
-    "ShowPasswords": {
-      "Menu": "Show passwords",
-      "OnePass": "Show password",
-      "AllPass": "Show all passwords"
+    "InitDB": {
+      "Created": "Database created successfully",
+      "AlreadyCreated": "Database already exists",
+      "DatabaseError": "Database error: "
     },
-    "Login": {
-      "Name": "Enter your username\n"
-    }
+    "Validator": {
+      "TryAgain": "Try again: ",
+      "ValidatePasswordStrength": {
+        "MediumComplexity": "Your password has medium complexity.",
+        "HighComplexity": "Your password has high complexity.",
+        "WeakPassword": "Your password is too weak. Please try again.",
+        "PasswordCondition": "Password must be between 8 and 20 characters. Please try again: ",
+        "SuccessfulRegistration": "Registration successful!"
+      },
+      "ValidateUsername": "Username can only contain letters. Please try again: ",
+      "ValidateService": "Service can only contain letters and spaces. Please try again: "
+    },
+    "Generator": {
+      "ValidateComplexity": "Complexity level must be one of: ",
+      "ValidateLength": "Password length must be:\n"
+    },
+    "Storage": {
+      "Register": {
+        "UserExists": "User with this name already exists"
+      },
+      "Login": {
+        "FailedLogin": "Login failed: "
+      },
+      "Logging": {
+        "Registration": "Registration",
+        "Login": "Login",
+        "Logout": "Logout",
+        "SavePassword": "Saving password"
+      },
+      "SavePassword": {
+        "ConfirmSave": "Save anyway? (yes/no): ",
+        "ForService": "Warning! For service",
+        "AlreadyExists": "already exists",
+        "Passwords": "passwords"
+      },
+      "LoggedOut": "Not authenticated"
+    },
+    "ChooseOption": "Choose an option"
   }
 }
