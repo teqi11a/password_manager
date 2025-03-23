@@ -17,6 +17,5 @@ class Language:
         i18n.load_path.clear()
         i18n.load_path.append("locales")
         i18n.translations.container.clear()
-
 # Инициализация
 Language.setup_i18n(lang="ru")
