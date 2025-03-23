@@ -2,7 +2,7 @@
   "ru": {
     "LoginInterface": {
       "LoginMenu": {
-        "AuthorizationMenu": "Меню авторизации:",
+        "AuthorizationMenu": "\t\tМеню авторизации",
         "Exit": "До свидания!",
         "WrongOption": "Неверный выбор"
       },
@@ -28,7 +28,8 @@
         "FailedAuthorization": "\nОшибка авторизации\n"
       },
       "ChangeLanguage":{
-        "ChangeOption": "1: Русский\n2: English\n",
+        "ChangeOption": "Выберите язык",
+
         "IncorrectLanguage": "Неверный язык!"
       }
     },
@@ -38,21 +39,21 @@
         "AllPass": "Показать все пароли"
       },
       "GeneratePassword": {
-        "InputPasswordLength": "Введите длину пароля (8-64): ",
-        "InputPasswordComplexity": "Выберите сложность (1-3):\n1. Базовый\n2. Продвинутый\n3. Максимальный\n",
+        "InputPasswordLength": "Введите длину пароля (8-64)",
+        "InputPasswordComplexity": "Выберите сложность (1-3):\n1. Базовый\n2. Продвинутый\n3. Максимальный",
         "GeneratedPassword": "Сгенерированный пароль: ",
-        "SavePasswordAgreement": "Сохранить пароль? (да/нет): ",
-        "ServiceInput": "Введите название сервиса: ",
+        "SavePasswordAgreement": "Сохранить пароль?",
+        "ServiceInput": "Введите название сервиса",
         "GenerationFailed": "Ошибка генерации: "
       },
       "SavePassword": {
-        "ServiceInput": "Введите название сервиса: \n",
-        "EnterPassword": "Введите пароль: \n",
+        "ServiceInput": "Введите название сервиса",
+        "EnterPassword": "Введите пароль",
         "PasswordSaveSuccess": "Пароль успешно сохранен!",
         "PasswordSaveRejected": "Вы отменили сохранение пароля"
       },
       "ShowPasswordInterface": {
-        "ServiceName": "Название сервиса: ",
+        "ServiceName": "Название сервиса",
         "ServiceOutput": "Сервис: ",
         "PasswordOutput": " -> Пароль: ",
         "ConfirmAction": "Подтвердите действие используя мастер-пароль:\n",
